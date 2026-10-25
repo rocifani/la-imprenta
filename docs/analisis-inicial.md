@@ -15,6 +15,7 @@ Requisitos expresados:
 - El diseñador puede dar de alta un presupuesto directamente desde el panel interno, sin solicitud pública ni contacto previo por WhatsApp.
 - El operario recibe el trabajo y puede marcarlo como terminado.
 - Al terminar el trabajo, el operario puede dejar notas o comentarios de cierre.
+- El operario puede terminar cada producto por separado o marcar la nota completa como terminada; el cierre conjunto termina todos sus productos pendientes.
 - El facturador factura en ARCA por fuera de la aplicación y marca el trabajo como facturado.
 - No integrar ARCA en esta etapa; registrar solamente esa condición.
 - Usar Next.js, Vercel y Supabase y priorizar claridad, mantenimiento y reutilización de código.
@@ -119,7 +120,7 @@ Confirmado: un usuario puede cumplir varios roles. Se incorpora Finanzas para la
 | --- | --- | --- |
 | Identificación | Letra, número, fecha | Significado de la letra, numeración y unicidad |
 | Cliente | Persona de contacto, teléfono, empresa, dirección | Datos obligatorios y clientes recurrentes |
-| Producto | Cantidad, tamaño, impresión, caras, papel y gramaje | Varios productos por nota confirmado; falta definir seguimiento por producto |
+| Producto | Cantidad, tamaño, impresión, caras, papel y gramaje | Varios productos por nota, avance individual y acción de cierre conjunto confirmados |
 | Comercial | Precio de venta | Moneda, impuestos, descuentos y vigencia |
 | Producción | Rendimiento por pliego, cantidad de pliegos, impresión, chapas, corte | Campos aplicables a cada técnica |
 | Costos | Precio por hoja | Visibilidad, cálculo y conservación histórica |
@@ -137,7 +138,7 @@ Propuesta: distinguir datos editables del cliente de los datos históricos de un
 - Diseñador: cargar consultas recibidas por los canales actuales, encontrar clientes, cotizar y convertir el acuerdo en instrucciones de producción sin volver a cargar la misma información.
 - Operario: ver qué debe producir, para cuándo, con qué archivo e instrucciones, registrar avances con pocas acciones y dejar comentarios al terminar el trabajo.
 
-Comentarios de cierre del operario: campo interno disponible al marcar el trabajo como terminado, para registrar observaciones sobre la realización, incidencias o detalles relevantes. Propuesta: opcional, asociado al trabajo y conservado con autor y fecha; visible en su detalle para los roles autorizados. No se envía al cliente ni genera notificaciones por sí mismo. Si una nota contiene varios productos, falta definir si el cierre y sus comentarios corresponden a cada producto o a la nota completa.
+Comentarios de cierre del operario: campo interno disponible al marcar el trabajo como terminado, para registrar observaciones sobre la realización, incidencias o detalles relevantes. Propuesta: opcional, asociado al producto y conservado con autor y fecha; permitir además un comentario general opcional al terminar la nota completa, sin sobrescribir los comentarios existentes. Visible para los roles autorizados, sin envío al cliente ni notificaciones por sí mismo. El avance individual por producto y el cierre conjunto de la nota están confirmados.
 - Facturador: encontrar trabajos pendientes de facturación y registrar la marca manual sin confundirla con un cobro.
 
 Preguntar qué dispositivos utiliza cada rol. No diseñar una tabla de escritorio como única interfaz antes de conocer el uso en taller.
@@ -245,9 +246,9 @@ El mecanismo Before User Created está disponible en Free y permite rechazar alt
 
 ## 13. Entornos de desarrollo y producción
 
-Requisito expresado: separar dev y prod. Confirmado: la aplicación de desarrollo correrá localmente en la computadora de la creadora; únicamente producción se desplegará en Vercel. No se configuraron aún. Ejecutar Next.js localmente no obliga a ejecutar también Supabase localmente: su ubicación se define por separado.
+Requisito expresado: separar dev y prod. Confirmado: la aplicación de desarrollo correrá localmente en la computadora de la creadora; únicamente producción se desplegará en Vercel. Decisión posterior: Supabase de desarrollo también corre localmente con Docker y CLI, porque los dos cupos alojados gratuitos ya están ocupados. El entorno local está iniciado, la primera migración de acceso aplicada y las 13 pruebas de permisos aprobadas. Google y la conexión de la aplicación siguen pendientes. No se contrató Pro ni se configuró una base productiva.
 
-Propuesta: dos proyectos independientes de Supabase, uno para desarrollo con datos ficticios y otro para producción con datos reales. Separar base de datos, archivos, usuarios, credenciales y configuración de Google por entorno. Los cambios de estructura se versionarán para poder aplicarlos de forma controlada a ambos entornos. Ninguna vista previa o prueba debe apuntar a los datos productivos.
+Separar Supabase local de desarrollo, con datos ficticios, del futuro proyecto alojado de producción, con datos reales. La propuesta anterior de dos proyectos alojados se reemplaza por esta decisión. Separar base de datos, archivos, usuarios, credenciales y configuración de Google por entorno. Los cambios de estructura se versionarán para poder aplicarlos de forma controlada a ambos entornos. Ninguna vista previa o prueba debe apuntar a los datos productivos.
 
 Supabase Free admite dos proyectos activos gratuitos, sujeto al cupo de la cuenta y las organizaciones donde se es Owner o Administrator. Si ya se utilizan esos cupos en otros proyectos, no quedan dos adicionales para esta aplicación. Esta separación usa proyectos independientes; no requiere el servicio de branching, que no está incluido en Free. Se mantienen los límites del plan y la posibilidad de pausa por inactividad.
 

@@ -16,7 +16,11 @@ _Evitar_: Presupuesto, cuando solo se recibió una consulta.
 **Nota de pedido**: Documento interno que identifica un encargo y reúne los datos necesarios para realizarlo.
 _Evitar_: Factura.
 
-**Trabajo**: Encargo de impresión que debe producir la imprenta. Una nota puede reunir varios productos; falta definir si se llama trabajo a cada producto o al conjunto.
+**Trabajo**: Encargo de impresión que debe producir la imprenta. Una nota puede reunir varios productos, cada uno con avance de producción propio.
+
+**Producto del pedido**: Ítem de una nota de pedido que puede producirse y marcarse como terminado por separado.
+
+**Cierre de nota completa**: Acción del operario que marca como terminados todos los productos pendientes de una nota, conservando los cierres anteriores.
 
 **Muestra del trabajo**: Referencia visual del resultado esperado. No implica que sea el archivo definitivo para imprimir ni que esté aprobada por el cliente.
 
