@@ -32,7 +32,7 @@ npm.cmd run build
 - `/panel`: verifica identidad, miembro activo y roles en el servidor; muestra bienvenida y navegación según permisos.
 - `/panel/usuarios`: listado, alta, edición y activación/desactivación del equipo, exclusivo de la administradora. Ver [gestión de usuarios](docs/gestion-de-usuarios.md).
 - `/panel/clientes`, `/panel/presupuestos` y `/panel/pedidos`: circuito de Diseño, con clientes, presupuestos manuales versionados y conversión del acuerdo aprobado a nota de pedido. Ver [alcance y verificación](docs/clientes-presupuestos.md).
-- Desde cada nota de pedido se puede descargar una versión PDF para el cliente, con logo y datos del acuerdo y sin notas internas.
+- Desde cada nota de pedido y presupuesto se puede descargar un PDF para el cliente. El presupuesto identifica su versión y estado y permite descargar versiones anteriores.
 
 El catálogo y la identidad visual son una primera propuesta para revisar. Los productos se muestran como referencias de consulta, sin precios públicos. El formulario inicial prepara una consulta de un producto; la lista de varios productos para la consulta pública queda para una siguiente iteración. Las notas internas de varios productos siguen dentro del alcance acordado.
 

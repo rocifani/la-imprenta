@@ -4,6 +4,7 @@ import type { Order, OrderItem } from "./types";
 export function customerOrderDocument(order: Order, items: OrderItem[]) {
   const customer = order.customer_snapshot;
   return {
+    kind: "order" as const,
     number: order.number,
     date: order.created_at,
     customer: {

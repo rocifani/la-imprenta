@@ -66,4 +66,12 @@ La tipografía Noto Sans se distribuye con su licencia abierta en `public/brand/
 
 Verificado con cuatro pruebas de PDF, extracción de contenido y límites y revisión visual de ejemplos ficticios de una y cuatro páginas. Se comprobaron acentos, logo, exclusión de datos internos, saltos de página, continuación de productos y total final. TypeScript y compilación productiva aprobados. La descarga desde la sesión real de la usuaria queda pendiente de su prueba manual. Los archivos de ejemplo están en `tmp/pdfs`, excluidos de Git.
 
+## PDF del presupuesto
+
+El detalle del presupuesto también ofrece «Descargar PDF para cliente», tanto para borradores como para aprobados. Si se consulta una versión anterior, se descarga exactamente esa versión y se la identifica como borrador; la aprobación solo corresponde a la versión actual aprobada. El nombre del archivo incluye el número PP y la versión.
+
+Comparte el diseño, tipografía, botón de descarga y controles de acceso con la nota de pedido. Incluye destinatario y teléfono guardados en esa versión, productos, cantidades, precios finales de los lotes, total y observaciones/condiciones para el cliente. No incorpora datos actuales de la ficha que no se hubieran guardado en la cotización, ni comentarios internos de aprobación. El formulario explicita que las observaciones y condiciones son para el cliente.
+
+Se agregó verificación de versiones históricas y estados y se revisaron visualmente ejemplos aprobados y borradores. La suite PDF tiene seis pruebas aprobadas. Recursos de logo y tipografías declarados para ambas rutas de descarga. El recorrido de descarga con sesión real sigue pendiente de revisión de la usuaria.
+
 Para probar: asignarse Diseño, crear un presupuesto con dos productos, editar el borrador, consultar una versión anterior, registrar la aprobación y generar una nota con un cliente nuevo. Abrir su ficha y repetir otro pedido con el cliente existente. Luego comprobar que editar la ficha conserve los datos de la nota anterior.

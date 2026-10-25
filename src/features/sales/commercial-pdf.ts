@@ -3,6 +3,7 @@ import fontkit from "@pdf-lib/fontkit";
 import { documentNumber, formatDate, formatMoney } from "./money";
 import { formatCuit } from "./cuit";
 import type { CustomerOrderDocument } from "./order-document";
+import type { CustomerQuoteDocument } from "./quote-document";
 
 type PdfAssets = { logo: Uint8Array; regular: Uint8Array; bold: Uint8Array };
 const width = 595.28;
@@ -35,7 +36,7 @@ function wrap(text: string, font: PDFFont, size: number, maxWidth: number): stri
   return result;
 }
 
-export async function buildOrderPdf(data: CustomerOrderDocument, assets: PdfAssets) {
+export async function buildCommercialPdf(data: CustomerOrderDocument | CustomerQuoteDocument, assets: PdfAssets) {
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
   const [regular, bold, logo] = await Promise.all([
@@ -51,8 +52,10 @@ export async function buildOrderPdf(data: CustomerOrderDocument, assets: PdfAsse
     }
     return text;
   };
-  const number = documentNumber("NP", data.number);
-  pdf.setTitle(`Nota de pedido ${number}`);
+  const isQuote = data.kind === "quote";
+  const number = documentNumber(isQuote ? "PP" : "NP", data.number);
+  const title = isQuote ? "Presupuesto" : "Nota de pedido";
+  pdf.setTitle(`${title} ${number}${isQuote ? ` - versión ${data.revision}` : ""}`);
   pdf.setAuthor("La Imprenta");
   pdf.setCreator("La Imprenta");
   let page = pdf.addPage([width, height]);
@@ -75,9 +78,9 @@ export async function buildOrderPdf(data: CustomerOrderDocument, assets: PdfAsse
   }
   function header() {
     page.drawImage(logo, { x: margin, y: height - 79, width: 180, height: 180 * logo.height / logo.width });
-    right("NOTA DE PEDIDO", width - margin, height - 43, 11, bold);
+    right(title.toLocaleUpperCase("es-AR"), width - margin, height - 43, 11, bold);
     right(number, width - margin, height - 63, 16, bold);
-    right(formatDate(data.date), width - margin, height - 81, 9);
+    right(isQuote ? `${formatDate(data.date)} · Versión ${data.revision} · ${data.status === "approved" ? "Aprobado" : "Borrador"}` : formatDate(data.date), width - margin, height - 81, isQuote ? 8 : 9);
     const segment = (width - margin * 2) / 3;
     [rgb(0, .66, .84), rgb(.89, 0, .45), rgb(.94, .84, 0)].forEach((color, index) => page.drawRectangle({ x: margin + index * segment, y: height - 99, width: segment, height: 2, color }));
     y = height - 125;
@@ -127,10 +130,15 @@ export async function buildOrderPdf(data: CustomerOrderDocument, assets: PdfAsse
   inProducts = false;
   ensure(85);
   y -= 10;
-  text("TOTAL ACORDADO · ARS", margin, y, 10, bold);
+  text(isQuote ? "TOTAL PRESUPUESTADO · ARS" : "TOTAL ACORDADO · ARS", margin, y, 10, bold);
   right(formatMoney(data.total), width - margin, y - 2, 18, bold);
   y -= 26;
   paragraph("Los importes corresponden al total de cada lote.", { size: 8 });
+  if (isQuote && data.conditions) {
+    y -= 12; ensure(45);
+    paragraph("OBSERVACIONES Y CONDICIONES", { size: 9, bold: true });
+    paragraph(data.conditions, { size: 9 });
+  }
   const pages = pdf.getPages();
   pages.forEach((currentPage, index) => {
     currentPage.drawLine({ start: { x: margin, y: 47 }, end: { x: width - margin, y: 47 }, thickness: .5, color: rule });

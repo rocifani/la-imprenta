@@ -1,22 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { documentNumber } from "./money";
 
-export function DownloadOrderPdf({ id, number }: { id: string; number: number }) {
+export function DownloadPdf({ href, filename }: { href: string; filename: string }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   async function download() {
     setPending(true); setError("");
     try {
-      const response = await fetch(`/panel/pedidos/${id}/pdf`, { cache: "no-store" });
+      const response = await fetch(href, { cache: "no-store" });
       if (!response.ok || !response.headers.get("Content-Type")?.includes("application/pdf")) {
         const data = await response.json().catch(() => null);
         throw new Error(data?.error ?? "No pudimos descargar el PDF. Intentá nuevamente.");
       }
       const url = URL.createObjectURL(await response.blob());
       const link = document.createElement("a");
-      link.href = url; link.download = `nota-pedido-${documentNumber("NP", number)}.pdf`;
+      link.href = url; link.download = filename;
       document.body.appendChild(link); link.click(); link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No pudimos descargar el PDF."); }
