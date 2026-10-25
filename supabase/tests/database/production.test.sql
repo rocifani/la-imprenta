@@ -1,0 +1,37 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+select plan(20);
+delete from public.team_members;
+insert into auth.users(id,email) values('00000000-0000-4000-8000-000000000301','production.designer@example.test'),('00000000-0000-4000-8000-000000000302','production.operator@example.test');
+insert into public.team_members(id,auth_user_id,email,display_name) values
+ ('00000000-0000-4000-8000-000000000303','00000000-0000-4000-8000-000000000301','production.designer@example.test','Diseño'),
+ ('00000000-0000-4000-8000-000000000304','00000000-0000-4000-8000-000000000302','production.operator@example.test','Operario');
+insert into public.team_member_roles(member_id,role) values('00000000-0000-4000-8000-000000000303','designer'),('00000000-0000-4000-8000-000000000304','operator');
+set local role authenticated;
+set local "request.jwt.claim.sub"='00000000-0000-4000-8000-000000000301';
+select public.create_direct_order('00000000-0000-4000-8000-000000000305',null,'{"display_name":"Cliente taller","notes":"Privado de cliente"}','00000000-0000-4000-8000-000000000306','Instrucciones del pedido','[{"description":"Folletos","specifications":"115 gramos","quantity":500,"amount":"123.45"},{"description":"Tarjetas","quantity":100,"amount":"200"}]');
+select throws_ok($$select public.complete_production('00000000-0000-4000-8000-000000000305',null,'')$$,'42501',null,'Diseño sin Producción no puede cerrar trabajos');
+set local "request.jwt.claim.sub"='00000000-0000-4000-8000-000000000302';
+select ok(public.production_queue('pending',0)->'orders' @> '[{"id":"00000000-0000-4000-8000-000000000305"}]'::jsonb,'La cola muestra la nota pendiente');
+select is(public.production_order('00000000-0000-4000-8000-000000000305')->>'notes','Instrucciones del pedido','Se ven las instrucciones de trabajo');
+select ok(not(public.production_order('00000000-0000-4000-8000-000000000305') ? 'total'),'Producción no recibe precios de la nota');
+select ok(not((public.production_order('00000000-0000-4000-8000-000000000305')->'items'->0) ? 'amount'),'Producción no recibe importes de productos');
+select ok(position('Privado de cliente' in public.production_order('00000000-0000-4000-8000-000000000305')::text)=0,'No expone notas privadas de la ficha');
+select is((select count(*) from public.orders),0::bigint,'El operario no puede leer directamente las notas comerciales');
+select lives_ok($$select public.complete_production('00000000-0000-4000-8000-000000000305',(public.production_order('00000000-0000-4000-8000-000000000305')->'items'->0->>'id')::uuid,'Corte revisado')$$,'Cierra un producto individual');
+select is(public.production_order('00000000-0000-4000-8000-000000000305')->'items'->0->>'production_status','completed','El producto queda terminado');
+select is((public.production_queue('pending',0)->'orders'->0->>'completed_count')::integer,1,'La nota sigue pendiente mientras falta un producto');
+select throws_ok($$select public.complete_production('00000000-0000-4000-8000-000000000305','00000000-0000-4000-8000-000000000399','')$$,'P0002',null,'No permite cerrar productos ajenos a la nota');
+select throws_ok($$select public.complete_production('00000000-0000-4000-8000-000000000305',null,repeat('x',2001))$$,'22023',null,'Valida la longitud del comentario');
+select lives_ok($$select public.complete_production('00000000-0000-4000-8000-000000000305',null,'Resto terminado')$$,'Cierra toda la nota');
+select is(public.production_order('00000000-0000-4000-8000-000000000305')->'items'->0->>'completion_note','Corte revisado','El cierre completo conserva comentarios anteriores');
+select is(public.production_order('00000000-0000-4000-8000-000000000305')->'items'->1->>'completion_note','Resto terminado','El comentario completo se aplica a los restantes');
+select public.complete_production('00000000-0000-4000-8000-000000000305',null,'Reintento');
+select is(public.production_order('00000000-0000-4000-8000-000000000305')->'items'->1->>'completion_note','Resto terminado','Un reintento no sobrescribe lo registrado');
+select ok(not(public.production_queue('pending',0)->'orders' @> '[{"id":"00000000-0000-4000-8000-000000000305"}]'::jsonb),'La nota terminada sale de pendientes');
+select ok(public.production_queue('completed',0)->'orders' @> '[{"id":"00000000-0000-4000-8000-000000000305"}]'::jsonb,'La nota aparece entre las terminadas');
+reset role;
+select ok(to_regprocedure('public.start_production(uuid,uuid)') is null,'No existe una acción para iniciar trabajos');
+select ok((select bool_and(completed_by='00000000-0000-4000-8000-000000000302'::uuid and completed_at is not null) from public.order_items where order_id='00000000-0000-4000-8000-000000000305'),'Se registran autor y fecha del cierre');
+select * from finish();
+rollback;

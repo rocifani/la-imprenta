@@ -16,11 +16,11 @@ _Evitar_: Presupuesto, cuando solo se recibió una consulta.
 **Nota de pedido**: Documento interno que identifica un encargo y reúne los datos necesarios para realizarlo.
 _Evitar_: Factura.
 
-**Trabajo**: Encargo de impresión que debe producir la imprenta. Una nota puede reunir varios productos, cada uno con avance de producción propio.
+**Trabajo**: Encargo de impresión que debe producir la imprenta. Una nota puede reunir varios trabajos, cada uno con avance de producción propio.
 
-**Producto del pedido**: Ítem de una nota de pedido que puede producirse y marcarse como terminado por separado.
+**Trabajo del pedido**: Ítem de una nota de pedido que puede producirse y marcarse como terminado por separado.
 
-**Cierre de nota completa**: Acción del operario que marca como terminados todos los productos pendientes de una nota, conservando los cierres anteriores.
+**Cierre de nota completa**: Acción del operario que marca como terminados todos los trabajos pendientes de una nota, conservando los cierres anteriores.
 
 **Muestra del trabajo**: Referencia visual del resultado esperado. No implica que sea el archivo definitivo para imprimir ni que esté aprobada por el cliente.
 
@@ -40,7 +40,7 @@ _Evitar_: Factura.
 
 **Costo de referencia**: Valor configurable de un material o servicio utilizado para preparar presupuestos.
 
-**Tarifa estándar**: Precio de venta de referencia para un producto con características y cantidad definidas, durante una vigencia. Puede corresponder a una unidad o a un lote.
+**Tarifa estándar**: Precio de venta de referencia para un trabajo con características y cantidad definidas, durante una vigencia. Puede corresponder a una unidad o a un lote.
 
 **Precio sugerido**: Importe propuesto como referencia a partir de una tarifa estándar aplicable. Puede ser modificado por quien prepara el presupuesto.
 

@@ -35,6 +35,22 @@ export async function saveCustomer(_previous: FormState, form: FormData): Promis
   redirect(`/panel/clientes/${id}?saved=1`);
 }
 
+function readItems(form: FormData) {
+  let source: unknown;
+  try { source = JSON.parse(String(form.get("items") ?? "[]")); } catch { return { error: "Revisá los trabajos." }; }
+  if (!Array.isArray(source) || source.length < 1 || source.length > 50) return { error: "Agregá entre 1 y 50 trabajos." };
+  const items = [];
+  for (const item of source) {
+    if (!item || typeof item !== "object") return { error: "Revisá los trabajos." };
+    const cents = moneyToCents(String(item.amount ?? ""));
+    if (cents === null || !/^\d{1,8}$/.test(String(item.quantity)) || Number(item.quantity) < 1 || Number(item.quantity) > 10000000) {
+      return { error: "Cada trabajo necesita una cantidad y un precio total mayores a cero, con hasta dos decimales." };
+    }
+    items.push({ description: String(item.description ?? "").trim(), specifications: String(item.specifications ?? "").trim(), quantity: Number(item.quantity), amount: (cents / 100).toFixed(2) });
+  }
+  return {items};
+}
+
 export async function saveQuote(_previous: FormState, form: FormData): Promise<FormState> {
   await requireDesigner();
   const id = String(form.get("id") ?? "");
@@ -42,18 +58,9 @@ export async function saveQuote(_previous: FormState, form: FormData): Promise<F
   const customerId = String(form.get("customer_id") ?? "");
   if (customerId && !validId(customerId)) return { error: "Seleccioná un cliente válido." };
   if (!validId(id) || version === undefined) return { error: "Recargá el formulario antes de guardar." };
-  let source: unknown;
-  try { source = JSON.parse(String(form.get("items") ?? "[]")); } catch { return { error: "Revisá los productos." }; }
-  if (!Array.isArray(source) || source.length < 1 || source.length > 50) return { error: "Agregá entre 1 y 50 productos." };
-  const items = [];
-  for (const item of source) {
-    if (!item || typeof item !== "object") return { error: "Revisá los productos." };
-    const cents = moneyToCents(String(item.amount ?? ""));
-    if (cents === null || !/^\d{1,8}$/.test(String(item.quantity)) || Number(item.quantity) < 1 || Number(item.quantity) > 10000000) {
-      return { error: "Cada producto necesita una cantidad y un precio total mayores a cero, con hasta dos decimales." };
-    }
-    items.push({ description: String(item.description ?? "").trim(), specifications: String(item.specifications ?? "").trim(), quantity: Number(item.quantity), amount: (cents / 100).toFixed(2) });
-  }
+  const parsed = readItems(form);
+  if ("error" in parsed) return parsed;
+  const items = parsed.items;
   const db = await createSupabaseServerClient();
   const { error } = await db.rpc("save_quote", {
     p_id: id, p_version: version, p_name: String(form.get("recipient_name") ?? "").trim(),
@@ -95,4 +102,19 @@ export async function createOrder(_previous: FormState, form: FormData): Promise
   revalidatePath("/panel/pedidos");
   revalidatePath(`/panel/presupuestos/${id}`);
   redirect(`/panel/pedidos/${data}`);
+}
+
+export async function createDirectOrder(_previous:FormState, form:FormData):Promise<FormState> {
+ await requireDesigner();
+ const id=String(form.get("id")??"");
+ const customerId=String(form.get("customer_id")??"");
+ const newCustomerId=String(form.get("new_customer_id")??"");
+ if (!validId(id) || !validId(newCustomerId) || (customerId && !validId(customerId))) return {error:"Recargá el formulario antes de crear la nota."};
+ if(form.get("confirmed")!=="on") return {error:"Confirmá que el trabajo fue acordado con el cliente."};
+ const parsed=readItems(form); if("error" in parsed) return parsed;
+ const db=await createSupabaseServerClient();
+ const {data,error}=await db.rpc("create_direct_order",{p_id:id,p_customer_id:customerId||null,p_new_customer:customerId?null:customerData(form),p_new_customer_id:newCustomerId,p_notes:String(form.get("order_notes")??"").trim(),p_items:parsed.items});
+ if(error) return mutationError(error);
+ revalidatePath("/panel/pedidos"); revalidatePath("/panel/clientes","layout");
+ redirect(`/panel/pedidos/${data}`);
 }

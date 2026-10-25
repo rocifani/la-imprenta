@@ -13,11 +13,11 @@ const order: Order = {
   customer_snapshot: { id: "private-customer-id", display_name: "Comercio de ejemplo", contact_name: "María Pérez", phone: "341 000 0000", email: "ejemplo@example.test", cuit: "20123456786", address: "Dirección de ejemplo, Rosario", notes: "NOTA PRIVADA DEL CLIENTE" },
   total: "96000.00", notes: "COSTO INTERNO NO COMPARTIR", invoiced: false, created_at: "2026-10-25T14:00:00Z",
 };
-const items: OrderItem[] = [{ id: "private-item-id", position: 1, description: "Imanes full color", specifications: "Tamaño 7 × 5 cm. Impresión full color. Corte láser.", quantity: 500, amount: "96000.00", production_status: "pending" }];
+const items: OrderItem[] = [{ id: "private-item-id", position: 1, description: "Imanes full color", specifications: "Tamaño 7 × 5 cm. Impresión full color. Corte láser.", quantity: 500, amount: "96000.00", production_status: "pending", completion_note: "COMENTARIO PRIVADO DEL OPERARIO", completed_at: null }];
 
 test("La versión para clientes excluye notas privadas, identificadores y avance interno", () => {
   const content = JSON.stringify(customerOrderDocument(order, items));
-  for (const value of ["NOTA PRIVADA", "COSTO INTERNO", "private-", "production_status", "invoiced"]) assert.ok(!content.includes(value), value);
+  for (const value of ["NOTA PRIVADA", "COSTO INTERNO", "private-", "production_status", "invoiced", "COMENTARIO PRIVADO", "completion_note"]) assert.ok(!content.includes(value), value);
   assert.ok(content.includes("Imanes full color"));
 });
 

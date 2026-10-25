@@ -71,7 +71,7 @@ export async function buildCommercialPdf(data: CustomerOrderDocument | CustomerQ
   }
   function line() { page.drawLine({ start: { x: margin, y }, end: { x: width - margin, y }, thickness: .7, color: rule }); }
   function productHeader() {
-    text("PRODUCTO Y CARACTERÍSTICAS", margin, y, 8, bold, muted);
+    text("TRABAJO Y CARACTERÍSTICAS", margin, y, 8, bold, muted);
     right("CANTIDAD", 432, y, 8, bold);
     right("TOTAL DEL LOTE", width - margin, y, 8, bold);
     y -= 12; line(); y -= 20;
@@ -86,7 +86,7 @@ export async function buildCommercialPdf(data: CustomerOrderDocument | CustomerQ
     y = height - 125;
     if (inProducts) {
       productHeader();
-      if (continuingProduct !== null) { text(`Producto ${continuingProduct} (continuación)`, margin, y, 9, bold, muted); y -= 20; }
+      if (continuingProduct !== null) { text(`Trabajo ${continuingProduct} (continuación)`, margin, y, 9, bold, muted); y -= 20; }
     }
   }
   function ensure(space: number) {

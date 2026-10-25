@@ -1,11 +1,1 @@
-"use client";
-
-import Link from "next/link";
-import { useState } from "react";
-import { CustomerPicker, type CustomerOption } from "./customer-picker";
-
-export function QuoteFilters({ status, customer, customerFilter, from, to }: { status: string; customer: CustomerOption | null; customerFilter: string; from: string; to: string }) {
-  const [mode, setMode] = useState(customerFilter === "unassigned" ? "unassigned" : customer ? "existing" : "all");
-  const [selected, setSelected] = useState<CustomerOption | null>(customer);
-  return <form method="get" className="quote-filters business-card"><div className="filter-grid"><label>Estado<select name="status" defaultValue={status}><option value="all">Todos</option><option value="draft">Borradores</option><option value="approved">Aprobados</option></select></label><label>Cliente<select value={mode} onChange={(event) => setMode(event.target.value)}><option value="all">Todos los clientes</option><option value="existing">Seleccionar cliente</option><option value="unassigned">Sin ficha de cliente</option></select></label><label>Creado desde<input type="date" name="from" defaultValue={from} /></label><label>Creado hasta<input type="date" name="to" defaultValue={to} /></label></div>{mode === "existing" && <CustomerPicker value={selected} required onChange={setSelected} />}{mode === "unassigned" && <input type="hidden" name="customer_id" value="unassigned" />}<p className="field-help">Se incluyen los días seleccionados completos, según la hora de Argentina.</p><div className="form-actions"><button className="button dark">Aplicar filtros</button><Link className="button secondary" href="/panel/presupuestos">Limpiar</Link></div></form>;
-}
+export { DocumentFilters as QuoteFilters } from "./document-filters";

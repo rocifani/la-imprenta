@@ -10,8 +10,8 @@ export type Quote = {
 };
 export type QuoteVersion = { id: string; revision: number; recipient_name: string; recipient_phone: string; notes: string; created_at: string; customer_id: string | null };
 export type Order = {
-  id: string; number: number; quote_id: string; quote_version_id: string; customer_id: string;
+  id: string; number: number; quote_id: string | null; quote_version_id: string | null; customer_id: string;
   customer_snapshot: Omit<Customer, "version" | "cuit"> & { cuit?: string }; total: string | number; notes: string; invoiced: boolean; created_at: string;
 };
-export type OrderItem = QuoteItem & { id: string; position: number; production_status: "pending" | "in_progress" | "completed" };
+export type OrderItem = QuoteItem & { id: string; position: number; production_status: "pending" | "completed"; completion_note?: string; completed_at?: string | null };
 export type FormState = { error?: string };

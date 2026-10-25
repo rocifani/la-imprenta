@@ -45,3 +45,17 @@
 .footer .brand-logo{width:185px}
 @media(max-width:680px){.brand-logo{width:150px}.footer .brand-logo{width:150px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+/* Controles compartidos y pantallas pequeñas del panel. */
+.checkbox-row input[type=checkbox]{padding:0;width:18px;height:18px;flex:0 0 18px;margin:2px 0 0}
+.checkbox-row span{min-width:0;line-height:1.6;overflow-wrap:anywhere}
+.quote-total + .checkbox-row{margin-top:22px}
+.form-actions{flex-wrap:wrap}
+.business-card,.quote-product,.document-list>a>span{min-width:0}
+.business-card h2,.document-list strong{overflow-wrap:anywhere}
+@media(max-width:680px){.business-card input:not([type=checkbox]),.business-card select,.business-card textarea{font-size:16px}.checkbox-row{padding:13px}.form-actions>.button{flex:1 1 180px}.quote-total strong{overflow-wrap:anywhere}.production-close .button{width:100%}}
+
+.order-progress{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:160px;margin:10px 0 18px}.order-progress .field-help{margin:0}.order-progress progress{width:100%;max-width:220px;height:8px;accent-color:#536938}.order-progress .status-badge{white-space:nowrap}
+
+.confirmation-dialog{width:min(480px,calc(100% - 32px));max-height:calc(100svh - 40px);overflow:auto;padding:28px;border:1px solid var(--line);border-radius:10px;background:var(--white);color:var(--ink);box-shadow:0 20px 70px #0003}.confirmation-dialog::backdrop{background:#16191288}.confirmation-dialog h2{margin:0 0 14px;font-size:25px;line-height:1.25}.confirmation-dialog p{font-size:14px;color:var(--muted)}.confirmation-dialog .form-actions{gap:10px}
+@media(max-width:680px){.confirmation-dialog{padding:22px}.confirmation-dialog .form-actions{flex-direction:column}.confirmation-dialog .form-actions>.button{flex:auto}}

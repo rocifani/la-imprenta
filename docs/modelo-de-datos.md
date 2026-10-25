@@ -1,6 +1,6 @@
 # Modelo de datos propuesto
 
-Estado: acceso y gestión de usuarios implementados. También está implementado el primer [circuito comercial](clientes-presupuestos.md): clientes, presupuestos con versiones y productos y notas de pedido creadas desde presupuestos aprobados. Producción operativa, tarifas y finanzas siguen pendientes. Las secciones siguientes describen el objetivo completo; consultar los documentos de cada entrega para distinguir implementación de propuesta.
+Estado: acceso y gestión de usuarios implementados. También está implementado el primer [circuito comercial](clientes-presupuestos.md): clientes, presupuestos con versiones y trabajos y notas de pedido creadas directamente o desde presupuestos aprobados. Producción operativa permite terminar trabajos o cerrar la nota completa con comentarios. Tarifas y finanzas siguen pendientes; el registro manual de facturación está implementado. Las secciones siguientes describen el objetivo completo; consultar los documentos de cada entrega para distinguir implementación de propuesta.
 
 ## Criterio general
 
@@ -28,9 +28,9 @@ Las autorizaciones previas y los usuarios activos deben mantenerse coherentes: d
 | Clientes | Nombre o empresa, contacto, teléfono y observaciones; reúne varios pedidos |
 | Presupuestos | Identificador, estado y vínculo opcional a cliente existente (implementado, con filtros por cliente y fecha de creación) |
 | Versiones de presupuesto | Destinatario y cliente vinculado de cada versión, fecha, condiciones y autor; vigencia y recotizaciones posteriores a aprobación pendientes |
-| Ítems de presupuesto | Varios productos por versión: descripción, cantidad, características, referencia de tarifa opcional, precio sugerido y precio cotizado |
+| Ítems de presupuesto | Varios trabajos por versión: descripción, cantidad, características, referencia de tarifa opcional, precio sugerido y precio cotizado |
 | Notas de pedido | Cliente obligatorio, referencia a versión aprobada, número, fecha, compromiso de producción si se acuerda, condición de facturación y datos históricos del acuerdo |
-| Ítems de pedido | Productos acordados e instrucciones de producción, conservados al crear el pedido |
+| Ítems de pedido | Trabajos acordados e instrucciones de producción, conservados al crear el pedido |
 
 El presupuesto puede existir antes del alta del cliente: conserva los datos del destinatario sin crearle una cuenta ni forzar una ficha definitiva. Una vez aprobado, el diseñador selecciona o crea al cliente y genera la nota. Registrar quién confirmó la aprobación y cuándo; queda pendiente cómo acredita esa aceptación.
 
@@ -46,9 +46,9 @@ Una modificación de costos, tarifa o contacto no reescribe documentos históric
 | Comentarios de cierre | Observaciones internas del operario, con autor y fecha |
 | Archivos de trabajo | Relación con el pedido, propósito y ubicación privada del archivo; distinguir muestra y archivo imprimible |
 
-Confirmado: cada producto de la nota se termina por separado; el operario también puede terminar la nota completa. Cada ítem conserva su estado de producción. La acción «Terminar nota completa» termina todos los ítems que todavía no estén terminados, conservando los cierres ya registrados. Registrar los cambios de forma atómica y sin duplicarlos ante reintentos.
+Confirmado: cada trabajo de la nota se termina por separado; el operario también puede terminar la nota completa. Cada ítem conserva su estado de producción. La acción «Terminar nota completa» termina todos los ítems que todavía no estén terminados, conservando los cierres ya registrados. Registrar los cambios de forma atómica y sin duplicarlos ante reintentos.
 
-Propuesta: calcular el avance general de la nota a partir de sus ítems: pendiente si ninguno comenzó, en proceso si hay avance pero faltan productos por terminar, terminada cuando todos finalizaron. No permitir una nota terminada con ítems pendientes. Al terminar la nota completa, mostrar qué productos se van a cerrar y conservar autor y fecha de cada cierre.
+Propuesta: calcular el avance general de la nota a partir de sus ítems: pendiente si ninguno comenzó, en proceso si hay avance pero faltan trabajos por terminar, terminada cuando todos finalizaron. No permitir una nota terminada con ítems pendientes. Al terminar la nota completa, mostrar qué trabajos se van a cerrar y conservar autor y fecha de cada cierre.
 
 Propuesta para comentarios: permitir notas de cierre opcionales por ítem y un comentario general opcional para el cierre conjunto, sin sobrescribir comentarios anteriores. Reaperturas, cancelaciones y retrabajos siguen pendientes de relevamiento.
 
@@ -60,7 +60,7 @@ Facturación permanece separada del avance de producción: inicialmente una marc
 
 | Registro | Responsabilidad |
 | --- | --- |
-| Familias de productos | Organizar los trabajos de referencia sin impedir descripciones personalizadas |
+| Familias de trabajos | Organizar los trabajos de referencia sin impedir descripciones personalizadas |
 | Tarifas estándar y sus versiones | Características cubiertas, cantidad aplicable, unidad o lote, importe, impuestos y vigencia |
 | Costos de referencia y sus versiones | Papel, materiales y servicios, con unidad e importe de referencia |
 
@@ -117,4 +117,10 @@ El diagrama omite relaciones pendientes y campos para facilitar la lectura. No e
 - Preparar migraciones SQL versionadas. Probarlas primero en dev, con datos ficticios, y después aplicarlas a prod. No crear a mano dos estructuras que puedan divergir.
 - Primera migración: acceso, usuarios y roles. Siguiente entrega: clientes, presupuestos manuales y notas de pedido. Agregar finanzas y recargos cuando se implementen sus reglas.
 
-Antes de la primera carga real deben quedar acordados los permisos de lectura de precios y deuda y las fechas de vencimiento. El avance de producción por producto y el cierre de nota completa ya están confirmados. Las definiciones pendientes no impiden comenzar la base de acceso.
+Antes de la primera carga real deben quedar acordados los permisos de lectura de precios y deuda y las fechas de vencimiento. El avance de producción por trabajo y el cierre de nota completa ya están confirmados. Las definiciones pendientes no impiden comenzar la base de acceso.
+
+
+Las notas directas requieren una ficha de cliente y trabajos con precios acordados. No requieren presupuesto: `orders.quote_id` y `quote_version_id` son opcionales y se conservan ambos nulos en ese caso. El alta atómica copia los datos del cliente y crea los trabajos pendientes, con la misma numeración y PDF que una nota originada en un presupuesto.
+
+
+El estado visible de una nota se deriva de sus trabajos: Confirmada, Parcialmente terminada o Terminada. Facturada se muestra según la flag independiente, sin alterar el avance de producción. Ver [Producción](produccion.md) para permisos y reglas de cierre.
