@@ -22,6 +22,8 @@ Las ediciones incluyen una versión: si otra edición ya guardó cambios, se rec
 
 ## Verificación y límites
 
+Actualización posterior: la usuaria confirmó que probó la gestión y funciona. Durante la entrega del circuito comercial se ejecutó la suite completa: las 17 pruebas de gestión de usuarios pasaron y la compilación terminó correctamente. Los bloqueos descritos a continuación corresponden a la verificación inicial y ya no son el estado actual de esos chequeos.
+
 - La migración `20261025000300_manage_team.sql` se aplicó correctamente.
 - TypeScript pasó después de regenerar los tipos de rutas. `npm run typecheck` ahora regenera esos tipos antes de comprobar el código.
 - La compilación de código y su chequeo de tipos pasaron; el build completo quedó bloqueado por `EPERM` al escribir/borrar archivos generados en `.next`, incluso al reintentar fuera del entorno restringido.

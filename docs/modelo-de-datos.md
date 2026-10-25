@@ -1,6 +1,6 @@
 # Modelo de datos propuesto
 
-Estado: propuesta del modelo completo para orientar las migraciones. La base de acceso (`team_members` y `team_member_roles`) y la gestión de usuarios desde la aplicación están implementadas. La escritura administrativa usa una función transaccional con versión por miembro e historial privado de cambios. Ver el [estado de verificación](gestion-de-usuarios.md). El resto del modelo de negocio todavía no está implementado; los nombres siguientes siguen siendo orientativos.
+Estado: acceso y gestión de usuarios implementados. También está implementado el primer [circuito comercial](clientes-presupuestos.md): clientes, presupuestos con versiones y productos y notas de pedido creadas desde presupuestos aprobados. Producción operativa, tarifas y finanzas siguen pendientes. Las secciones siguientes describen el objetivo completo; consultar los documentos de cada entrega para distinguir implementación de propuesta.
 
 ## Criterio general
 
@@ -26,8 +26,8 @@ Las autorizaciones previas y los usuarios activos deben mantenerse coherentes: d
 | Registro | Datos principales y relaciones |
 | --- | --- |
 | Clientes | Nombre o empresa, contacto, teléfono y observaciones; reúne varios pedidos |
-| Presupuestos | Identificador y origen de la consulta; vínculo opcional a cliente existente |
-| Versiones de presupuesto | Destinatario, fecha, vigencia, estado, condiciones, autor e importes de una cotización concreta |
+| Presupuestos | Identificador, estado y vínculo opcional a cliente existente (implementado, con filtros por cliente y fecha de creación) |
+| Versiones de presupuesto | Destinatario y cliente vinculado de cada versión, fecha, condiciones y autor; vigencia y recotizaciones posteriores a aprobación pendientes |
 | Ítems de presupuesto | Varios productos por versión: descripción, cantidad, características, referencia de tarifa opcional, precio sugerido y precio cotizado |
 | Notas de pedido | Cliente obligatorio, referencia a versión aprobada, número, fecha, compromiso de producción si se acuerda, condición de facturación y datos históricos del acuerdo |
 | Ítems de pedido | Productos acordados e instrucciones de producción, conservados al crear el pedido |

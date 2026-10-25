@@ -30,11 +30,13 @@ npm.cmd run build
 - `src/features/quotes`: preparación de la consulta pública y mensaje de WhatsApp.
 - `/acceso`: muestra ingreso con Google al completar su configuración; mientras tanto informa que está en preparación.
 - `/panel`: verifica identidad, miembro activo y roles en el servidor; muestra bienvenida y navegación según permisos.
-- `/panel/usuarios`: listado, alta, edición y activación/desactivación del equipo, exclusivo de la administradora. Ver [gestión de usuarios y verificaciones pendientes](docs/gestion-de-usuarios.md).
+- `/panel/usuarios`: listado, alta, edición y activación/desactivación del equipo, exclusivo de la administradora. Ver [gestión de usuarios](docs/gestion-de-usuarios.md).
+- `/panel/clientes`, `/panel/presupuestos` y `/panel/pedidos`: circuito de Diseño, con clientes, presupuestos manuales versionados y conversión del acuerdo aprobado a nota de pedido. Ver [alcance y verificación](docs/clientes-presupuestos.md).
+- Desde cada nota de pedido se puede descargar una versión PDF para el cliente, con logo y datos del acuerdo y sin notas internas.
 
 El catálogo y la identidad visual son una primera propuesta para revisar. Los productos se muestran como referencias de consulta, sin precios públicos. El formulario inicial prepara una consulta de un producto; la lista de varios productos para la consulta pública queda para una siguiente iteración. Las notas internas de varios productos siguen dentro del alcance acordado.
 
-La gestión de usuarios está implementada y pendiente de verificación completa. Próximas etapas: clientes, presupuestos y notas de pedido. El ingreso Google local ya fue probado; la configuración productiva es independiente y sigue pendiente.
+El ingreso Google y la gestión de usuarios fueron probados por la usuaria. El circuito comercial está implementado con pruebas y compilación aprobadas, pendiente de recorrido visual. Próximas etapas: tarifas sugeridas, producción y finanzas. La configuración productiva es independiente y sigue pendiente.
 
 ## Base de datos local
 

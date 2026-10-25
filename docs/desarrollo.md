@@ -8,8 +8,8 @@ Identidad: el logo original recibido está conservado en `public/brand/la-impren
 
 ## Próximas etapas
 
-1. Supabase local está levantado en Docker y conectado a Next.js. La administradora confirmó el ingreso real con Google el 25/10/2026. Se implementó la gestión de usuarios con su migración aplicada; quedan pendientes sus nuevas pruebas y la revisión visual por permisos rechazados. Ver [estado y límites](gestion-de-usuarios.md). Las 20 pruebas anteriores corresponden a la base de acceso, no al módulo nuevo.
-2. Clientes y presupuestos directos con precios manuales; notas de varios productos y aprobación previa a producción.
+1. Supabase local y Google están operativos; la usuaria confirmó ingreso y gestión de usuarios. Las 37 pruebas de acceso y usuarios ya se ejecutaron correctamente durante la siguiente entrega.
+2. Clientes y presupuestos directos con precios manuales, versiones, aprobación y notas de varios productos implementados. La migración está aplicada y pasaron 19 pruebas adicionales, 3 de importes, TypeScript y build. Falta el recorrido visual con la usuaria. Ver [alcance del circuito comercial](clientes-presupuestos.md).
 3. Tarifas estándar editables y sugerencias cuando coincidan las características.
 4. Cola de producción, cierre con comentarios y registro manual de facturado.
 5. Finanzas: señas, cobros, pagos, compras, saldos por cliente y resumen mensual.
