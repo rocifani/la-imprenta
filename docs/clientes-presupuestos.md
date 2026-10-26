@@ -27,7 +27,7 @@ Esta entrega no carga automáticamente el PDF de precios ni sugiere tarifas. Ese
 
 ## Alcance que sigue pendiente
 
-- Cobros, señas y saldos: la ficha indica expresamente que todavía no están disponibles, sin mostrar una deuda o un saldo ficticio de cero.
+- Cobros, señas y saldos: la ficha muestra total acordado, cobrado y saldo derivado de los movimientos. Ver [Finanzas](finanzas.md).
 - Operarios: los ítems del pedido nacen pendientes, pero aún no hay acciones de avance/cierre ni comentarios de producción en este módulo.
 - Facturador: el esquema prevé la condición de facturado, pero aún no hay una acción para modificarla.
 - Archivos de muestra o impresión y notificaciones al cliente no forman parte de esta entrega. Se incorporó posteriormente la descarga de la nota en PDF para enviar manualmente al cliente; el seguimiento público y las notificaciones generales siguen excluidos.
@@ -88,3 +88,5 @@ Migración: 20261025000800_direct_orders.sql. El origen quote_id/quote_version_i
 Validación de esta entrega: TypeScript, 83 pruebas SQL, 3 pruebas de fechas y 6 pruebas de PDF aprobadas. La comprobación visual del formulario queda para la prueba manual.
 
 La tabla y el detalle de notas muestran estado actual y avance por trabajos. Ver [Producción](produccion.md).
+
+En el alta de notas directas y desde presupuestos se puede registrar una seña ya recibida, con fecha y medio de pago. El PDF muestra la seña, los cobros adicionales y el saldo pendiente.

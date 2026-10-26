@@ -85,6 +85,14 @@ export async function approveQuote(_previous: FormState, form: FormData): Promis
   redirect(`/panel/presupuestos/${id}`);
 }
 
+function readDeposit(form:FormData){
+ const raw=String(form.get("deposit_amount")??"").trim();
+ if(!raw) return {deposit:null};
+ const cents=moneyToCents(raw);
+ if(cents===null) return {error:"Ingresá una seña mayor a cero, o dejá el campo vacío si no cobraste."};
+ return {deposit:{amount:(cents/100).toFixed(2),paid_on:String(form.get("deposit_paid_on")??""),method:String(form.get("deposit_method")??"")}};
+}
+
 export async function createOrder(_previous: FormState, form: FormData): Promise<FormState> {
   await requireDesigner();
   const id = String(form.get("id") ?? "");
@@ -92,14 +100,15 @@ export async function createOrder(_previous: FormState, form: FormData): Promise
   const customerId = String(form.get("customer_id") ?? "");
   const newCustomerId = String(form.get("new_customer_id") ?? "");
   if (!validId(id) || version == null || (customerId && !validId(customerId)) || !validId(newCustomerId)) return { error: "Recargá el formulario antes de generar la nota." };
+ const depositData=readDeposit(form); if("error" in depositData) return depositData;
   const db = await createSupabaseServerClient();
   const { data, error } = await db.rpc("create_order_from_quote", {
     p_quote_id: id, p_version: version, p_customer_id: customerId || null,
-    p_new_customer: customerId ? null : customerData(form), p_new_customer_id: newCustomerId,
+    p_new_customer: customerId ? null : customerData(form), p_new_customer_id: newCustomerId, p_deposit:depositData.deposit,
   });
   if (error) return mutationError(error);
   revalidatePath("/panel/clientes", "layout");
-  revalidatePath("/panel/pedidos");
+  revalidatePath("/panel/pedidos"); revalidatePath("/panel/finanzas","layout");
   revalidatePath(`/panel/presupuestos/${id}`);
   redirect(`/panel/pedidos/${data}`);
 }
@@ -112,9 +121,10 @@ export async function createDirectOrder(_previous:FormState, form:FormData):Prom
  if (!validId(id) || !validId(newCustomerId) || (customerId && !validId(customerId))) return {error:"Recargá el formulario antes de crear la nota."};
  if(form.get("confirmed")!=="on") return {error:"Confirmá que el trabajo fue acordado con el cliente."};
  const parsed=readItems(form); if("error" in parsed) return parsed;
+ const depositData=readDeposit(form); if("error" in depositData) return depositData;
  const db=await createSupabaseServerClient();
- const {data,error}=await db.rpc("create_direct_order",{p_id:id,p_customer_id:customerId||null,p_new_customer:customerId?null:customerData(form),p_new_customer_id:newCustomerId,p_notes:String(form.get("order_notes")??"").trim(),p_items:parsed.items});
+ const {data,error}=await db.rpc("create_direct_order",{p_id:id,p_customer_id:customerId||null,p_new_customer:customerId?null:customerData(form),p_new_customer_id:newCustomerId,p_notes:String(form.get("order_notes")??"").trim(),p_items:parsed.items,p_deposit:depositData.deposit});
  if(error) return mutationError(error);
- revalidatePath("/panel/pedidos"); revalidatePath("/panel/clientes","layout");
+ revalidatePath("/panel/pedidos"); revalidatePath("/panel/finanzas","layout"); revalidatePath("/panel/clientes","layout");
  redirect(`/panel/pedidos/${data}`);
 }

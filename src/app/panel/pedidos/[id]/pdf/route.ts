@@ -14,9 +14,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   if (denied) return denied;
   const { id } = await params;
   if (!validId(id)) return NextResponse.json({ error: "La nota no existe." }, { status: 404, headers: privatePdfHeaders });
-  const { order, items } = await getOrder(id);
+  const { order, items, money } = await getOrder(id);
   try {
-    const bytes = await buildCommercialPdf(customerOrderDocument(order, items), await loadPdfAssets());
+    const bytes = await buildCommercialPdf(customerOrderDocument(order, items, money), await loadPdfAssets());
     return pdfResponse(bytes, `nota-pedido-${documentNumber("NP", order.number)}.pdf`);
   } catch (error) { return pdfErrorResponse(error); }
 }

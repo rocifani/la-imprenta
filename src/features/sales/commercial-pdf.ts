@@ -134,6 +134,13 @@ export async function buildCommercialPdf(data: CustomerOrderDocument | CustomerQ
   right(formatMoney(data.total), width - margin, y - 2, 18, bold);
   y -= 26;
   paragraph("Los importes corresponden al total de cada lote.", { size: 8 });
+  if (!isQuote) {
+    ensure(100);
+    paragraph(`Seña recibida: ${formatMoney(data.deposit)}`, {size:10});
+    if (data.paid > data.deposit) paragraph(`Otros cobros registrados: ${formatMoney(data.paid-data.deposit)}`, {size:10});
+    paragraph(`Saldo pendiente: ${formatMoney(data.balance)}`, {size:12,bold:true});
+    paragraph("Saldo según los cobros registrados al emitir este documento.", {size:8});
+  }
   if (isQuote && data.conditions) {
     y -= 12; ensure(45);
     paragraph("OBSERVACIONES Y CONDICIONES", { size: 9, bold: true });

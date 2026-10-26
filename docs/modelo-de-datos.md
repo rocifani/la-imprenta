@@ -1,6 +1,6 @@
 # Modelo de datos propuesto
 
-Estado: acceso y gestión de usuarios implementados. También está implementado el primer [circuito comercial](clientes-presupuestos.md): clientes, presupuestos con versiones y trabajos y notas de pedido creadas directamente o desde presupuestos aprobados. Producción operativa permite terminar trabajos o cerrar la nota completa con comentarios. Tarifas y finanzas siguen pendientes; el registro manual de facturación está implementado. Las secciones siguientes describen el objetivo completo; consultar los documentos de cada entrega para distinguir implementación de propuesta.
+Estado: acceso y gestión de usuarios implementados. También está implementado el primer [circuito comercial](clientes-presupuestos.md): clientes, presupuestos con versiones y trabajos y notas de pedido creadas directamente o desde presupuestos aprobados. Producción operativa permite terminar trabajos o cerrar la nota completa con comentarios. El registro manual de facturación y el primer módulo de [Finanzas](finanzas.md) están implementados. Tarifas y recargos automáticos siguen pendientes. Las secciones siguientes describen el objetivo completo; consultar los documentos de cada entrega para distinguir implementación de propuesta.
 
 ## Criterio general
 
@@ -124,3 +124,6 @@ Las notas directas requieren una ficha de cliente y trabajos con precios acordad
 
 
 El estado visible de una nota se deriva de sus trabajos: Confirmada, Parcialmente terminada o Terminada. Facturada se muestra según la flag independiente, sin alterar el avance de producción. Ver [Producción](produccion.md) para permisos y reglas de cierre.
+
+
+Regla confirmada: el aviso de atraso aparece a los 15 días desde la creación de la nota si hay saldo pendiente. No implica un recargo automático. El saldo se deriva de cobros, incluidas las señas del alta, y es independiente de la facturación y del cierre de producción.

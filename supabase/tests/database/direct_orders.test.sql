@@ -22,7 +22,7 @@ select throws_ok($$select public.create_direct_order('00000000-0000-4000-8000-00
 select throws_ok($$select public.create_direct_order('00000000-0000-4000-8000-000000000205',null,'{"display_name":"No debe guardarse"}','00000000-0000-4000-8000-000000000206','','[{"description":"Producto","quantity":0,"amount":"100"}]')$$,'22023',null,'Valida cantidades también en la base');
 select is((select count(*) from public.customers where id='00000000-0000-4000-8000-000000000206'),0::bigint,'Un pedido inválido no deja una ficha huérfana');
 select lives_ok($$select public.create_direct_order('00000000-0000-4000-8000-000000000205',null,'{"display_name":"Cliente nuevo","cuit":"20123456789"}','00000000-0000-4000-8000-000000000206','','[{"description":"Producto","quantity":1,"amount":"100"}]')$$,'Permite crear ficha y nota juntas');
-select ok(not has_function_privilege('anon','public.create_direct_order(uuid,uuid,jsonb,uuid,text,jsonb)','EXECUTE'),'El público no puede crear notas');
+select ok(not has_function_privilege('anon','public.create_direct_order(uuid,uuid,jsonb,uuid,text,jsonb,jsonb)','EXECUTE'),'El público no puede crear notas');
 set local "request.jwt.claim.sub"='00000000-0000-4000-8000-000000000299';
 select throws_ok($$select public.create_direct_order('00000000-0000-4000-8000-000000000207',null,null,null,'','[]')$$,'42501',null,'Una cuenta sin Diseño no puede crear notas');
 reset role;

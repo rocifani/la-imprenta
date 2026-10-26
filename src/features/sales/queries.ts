@@ -51,5 +51,7 @@ export async function getOrder(id: string) {
   ]);
   if (error || itemsError) throw new Error("No pudimos cargar la nota de pedido.");
   if (!order) notFound();
-  return { order: order as Order, items: items as OrderItem[] };
+  const {data:money,error:moneyError}=await db.rpc("order_money",{p_order_id:id});
+  if(moneyError||!money) throw new Error("No pudimos cargar el saldo de la nota.");
+  return { order: order as Order, items: items as OrderItem[], money: money as import("@/features/finance/shared").OrderMoney };
 }
