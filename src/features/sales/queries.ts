@@ -32,7 +32,7 @@ export async function getQuote(id: string) {
   if (!quote) notFound();
   const [{ data: version, error: versionError }, { data: items, error: itemsError }, { data: order, error: orderError }] = await Promise.all([
     db.from("quote_versions").select("*").eq("id", quote.current_version_id).single(),
-    db.from("quote_items").select("description, specifications, quantity, amount").eq("version_id", quote.current_version_id).order("position"),
+    db.from("quote_items").select("description, specifications, quantity, amount, client_description, technical_sheet").eq("version_id", quote.current_version_id).order("position"),
     db.from("orders").select("id,number").eq("quote_id", id).maybeSingle(),
   ]);
   if (versionError || itemsError || orderError) throw new Error("No pudimos cargar el detalle del presupuesto.");
@@ -54,4 +54,18 @@ export async function getOrder(id: string) {
   const {data:money,error:moneyError}=await db.rpc("order_money",{p_order_id:id});
   if(moneyError||!money) throw new Error("No pudimos cargar el saldo de la nota.");
   return { order: order as Order, items: items as OrderItem[], money: money as import("@/features/finance/shared").OrderMoney };
+}
+
+export async function getCustomerWorkSummary(id:string){
+ await requireDesigner();if(!validId(id))notFound();
+ const db=await createSupabaseServerClient();const {data,error}=await db.rpc("customer_work_summary",{p_customer_id:id});
+ if(error)throw new Error("No pudimos cargar el resumen del cliente.");if(!data)notFound();
+ return data as import("./customer-summary").CustomerWorkSummary;
+}
+
+export async function getCompletedCustomerSummary(id:string){
+ await requireDesigner();if(!validId(id))notFound();
+ const db=await createSupabaseServerClient();const {data,error}=await db.rpc("customer_completed_summary",{p_customer_id:id});
+ if(error)throw new Error("No pudimos cargar los trabajos terminados del cliente.");if(!data)notFound();
+ return data as import("./completed-summary").CompletedCustomerSummary;
 }

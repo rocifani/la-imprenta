@@ -67,3 +67,10 @@ _Evitar_: Costo estimado como sinónimo de pago realizado.
 **Recargo por atraso**: Importe adicional por demora de pago según una regla configurable. Su cálculo y modalidad de aplicación están pendientes de definición.
 
 **Compra**: Adquisición de materiales o servicios para la imprenta. Su registro no implica por sí mismo que se haya pagado.
+
+
+**Descripción para el cliente**: Texto simple por trabajo que aparece en los documentos comerciales. Se mantiene separado de las indicaciones internas y la ficha técnica.
+
+**Ficha técnica de producción**: Datos internos de composición, papel, copias, terminaciones, numeración y medidas por trabajo. Diseño la completa; el taller la consulta. No forma parte de los PDFs del cliente.
+
+**Resumen de trabajos terminados del cliente**: Documento comercial con trabajos efectivamente terminados y saldos por nota completa. Excluye trabajos pendientes. Un saldo de nota no se distribuye entre trabajos sin una regla de aplicación de cobros.

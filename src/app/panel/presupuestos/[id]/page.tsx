@@ -22,7 +22,7 @@ export default async function QuotePage({ params, searchParams }: { params: Prom
   if (historical) {
     const { data: oldVersion, error } = await db.from("quote_versions").select("*").eq("quote_id", current.quote.id).eq("revision", revision).single();
     if (error) throw new Error("No pudimos cargar la versión anterior.");
-    const { data: oldItems, error: itemsError } = await db.from("quote_items").select("description,specifications,quantity,amount").eq("version_id", oldVersion.id).order("position");
+    const { data: oldItems, error: itemsError } = await db.from("quote_items").select("description,specifications,quantity,amount,client_description,technical_sheet").eq("version_id", oldVersion.id).order("position");
     if (itemsError) throw new Error("No pudimos cargar los trabajos.");
     version = oldVersion as QuoteVersion; items = oldItems as QuoteItem[];
   }

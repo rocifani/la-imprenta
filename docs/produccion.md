@@ -20,3 +20,6 @@ El estado se calcula a partir de los trabajos, junto con su cantidad terminada/t
 La migración 20261025001100_work_completion_only.sql elimina la función de inicio, convierte los estados anteriores en proceso a pendientes y restringe el estado de cada trabajo a pendiente o terminado. Conserva todos los trabajos ya terminados y sus comentarios. Las migraciones anteriores permanecen como historial.
 
 Las pruebas verifican permisos, proyección de datos, cierre parcial y completo, comentarios, reintentos y auditoría. La interfaz usa filas de confirmación clickeables, formularios y botones adaptables. La revisión visual completa en dispositivos sigue pendiente.
+
+
+La vista por nota muestra la ficha técnica estructurada de cada trabajo. Diseño puede completarla y corregirla desde el detalle comercial, sin modificar importes ni estados. Ver [Fichas de producción](fichas-de-produccion.md).

@@ -1,0 +1,8 @@
+import {DownloadPdf} from "./download-pdf";
+import {documentNumber,formatDate,formatMoney} from "./money";
+import type {CompletedCustomerSummary} from "./completed-summary";
+export function CompletedSummaryView({summary}:{summary:CompletedCustomerSummary}){
+ return <section className="business-card"><h2>Resumen para el cliente: trabajos terminados</h2><p className="field-help">El PDF incluye solamente los trabajos terminados. Los cobros y saldos corresponden a las notas completas, incluidas las notas con trabajos todavía pendientes.</p><p><strong>Saldo de las notas incluidas: {formatMoney(summary.balance)}</strong></p><DownloadPdf label="Descargar resumen de trabajos terminados ↓" href={`/panel/clientes/${summary.customer.id}/resumen/pdf`} filename={`resumen-cliente-${summary.customer.id}.pdf`}/>
+ {summary.orders.length?<details className="technical-editor"><summary>Ver trabajos terminados del resumen ({summary.orders.reduce((sum,order)=>sum+order.items.length,0)})</summary>{summary.orders.map(order=><article className="summary-note" key={order.id}><h3>{documentNumber("NP",order.number)} · {formatDate(order.created_at)}</h3><ul>{order.items.map((item,index)=><li key={index}>{item.description} · Cantidad: {item.quantity.toLocaleString("es-AR")} · {formatMoney(item.amount)}</li>)}</ul><p>Trabajos terminados: {formatMoney(order.completed_total)} · Total de la nota: {formatMoney(order.total)} · Cobrado: {formatMoney(order.paid)} · <strong>Saldo de la nota: {formatMoney(order.balance)}</strong></p></article>)}</details>:<p>Todavía no hay trabajos terminados para incluir.</p>}
+ </section>;
+}

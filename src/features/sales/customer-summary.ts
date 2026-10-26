@@ -1,0 +1,1 @@
+export type CustomerWorkSummary={generated_at:string;customer:{id:string;name:string;cuit:string;phone:string;email:string;address:string};balance:number;pending_count:number;orders:{id:string;number:number;created_at:string;total:number;paid:number;balance:number;pending_count:number;items:{description:string;quantity:number;completed:boolean}[]}[]};

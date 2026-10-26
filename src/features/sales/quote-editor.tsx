@@ -15,7 +15,7 @@ export function QuoteEditor({ id, quote, version, items, customer }: { id: strin
   const [notes, setNotes] = useState(version?.notes ?? "");
   const [recipientMode, setRecipientMode] = useState(customer ? "existing" : "manual");
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerOption | null>(customer ?? null);
-  const [products, setProducts] = useState<EditableItem[]>(items?.map((item, index) => ({ key: String(index), description: item.description, specifications: item.specifications, quantity: String(item.quantity), amount: String(item.amount) })) ?? [{ key: "initial", description: "", specifications: "", quantity: "1", amount: "" }]);
+  const [products, setProducts] = useState<EditableItem[]>(items?.map((item, index) => ({ key: String(index), description: item.description, client_description:item.client_description??item.description, technical_sheet:item.technical_sheet??{}, specifications: item.specifications, quantity: String(item.quantity), amount: String(item.amount) })) ?? [{ key: "initial", description: "", specifications: "", quantity: "1", amount: "" }]);
   const cents = products.map((item) => moneyToCents(item.amount));
   const total = cents.every((amount) => amount !== null) ? cents.reduce<number>((sum, amount) => sum + (amount ?? 0), 0) / 100 : null;
   return <form action={action} className="quote-editor"><input type="hidden" name="id" value={id} /><input type="hidden" name="version" value={quote?.version ?? ""} /><input type="hidden" name="items" value={JSON.stringify(products)} />{state.error && <p role="alert" className="form-alert">{state.error}</p>}<fieldset disabled={pending} className="form-fields">

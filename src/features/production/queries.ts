@@ -2,7 +2,7 @@ import {redirect,notFound} from "next/navigation";
 import {getTeamAccess} from "@/features/auth/team-access";
 import {createSupabaseServerClient} from "@/lib/supabase/server";
 import {validId} from "@/features/sales/queries";
-export type ProductionItem={id:string;description:string;specifications:string;quantity:number;production_status:"pending"|"completed";completion_note:string;completed_at:string|null};
+export type ProductionItem={id:string;description:string;client_description:string;technical_sheet:import("./technical-sheet").TechnicalSheet;specifications:string;quantity:number;production_status:"pending"|"completed";completion_note:string;completed_at:string|null};
 export type ProductionOrder={id:string;number:number;created_at:string;customer_name:string;notes:string;items:ProductionItem[]};
 export type ProductionSummary={id:string;number:number;created_at:string;customer_name:string;item_count:number;completed_count:number};
 export async function requireOperator(){

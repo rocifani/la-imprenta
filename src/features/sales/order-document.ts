@@ -11,7 +11,7 @@ export function customerOrderDocument(order: Order, items: OrderItem[], money?: 
       name: customer.display_name, contact: customer.contact_name, phone: customer.phone,
       email: customer.email, address: customer.address, cuit: customer.cuit,
     },
-    items: items.map(({ description, specifications, quantity, amount }) => ({ description, specifications, quantity, amount })),
+    items: items.map(({ description, client_description, quantity, amount }) => ({ description:client_description?.trim()||description, specifications:"", quantity, amount })),
     total: order.total,
     deposit: money?.deposit ?? 0, paid: money?.paid ?? 0, balance: money?.balance ?? Number(order.total),
   };

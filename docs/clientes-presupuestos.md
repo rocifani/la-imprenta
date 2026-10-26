@@ -90,3 +90,6 @@ Validación de esta entrega: TypeScript, 83 pruebas SQL, 3 pruebas de fechas y 6
 La tabla y el detalle de notas muestran estado actual y avance por trabajos. Ver [Producción](produccion.md).
 
 En el alta de notas directas y desde presupuestos se puede registrar una seña ya recibida, con fecha y medio de pago. El PDF muestra la seña, los cobros adicionales y el saldo pendiente.
+
+
+Las descripciones comerciales y los datos de producción ahora están separados. La ficha del cliente permite descargar el resumen de trabajos terminados y saldos. Ver [Fichas de producción y resumen](fichas-de-produccion.md).

@@ -13,11 +13,11 @@ const order: Order = {
   customer_snapshot: { id: "private-customer-id", display_name: "Comercio de ejemplo", contact_name: "María Pérez", phone: "341 000 0000", email: "ejemplo@example.test", cuit: "20123456786", address: "Dirección de ejemplo, Rosario", notes: "NOTA PRIVADA DEL CLIENTE" },
   total: "96000.00", notes: "COSTO INTERNO NO COMPARTIR", invoiced: false, created_at: "2026-10-25T14:00:00Z",
 };
-const items: OrderItem[] = [{ id: "private-item-id", position: 1, description: "Imanes full color", specifications: "Tamaño 7 × 5 cm. Impresión full color. Corte láser.", quantity: 500, amount: "96000.00", production_status: "pending", completion_note: "COMENTARIO PRIVADO DEL OPERARIO", completed_at: null }];
+const items: OrderItem[] = [{ id: "private-item-id", position: 1, description: "Imanes full color", client_description:"Imanes full color para promoción", technical_sheet:{observations:"FICHA TECNICA PRIVADA"}, specifications: "Tamaño 7 × 5 cm. Impresión full color. Corte láser.", quantity: 500, amount: "96000.00", production_status: "pending", completion_note: "COMENTARIO PRIVADO DEL OPERARIO", completed_at: null }];
 
 test("La versión para clientes excluye notas privadas, identificadores y avance interno", () => {
   const content = JSON.stringify(customerOrderDocument(order, items));
-  for (const value of ["NOTA PRIVADA", "COSTO INTERNO", "private-", "production_status", "invoiced", "COMENTARIO PRIVADO", "completion_note"]) assert.ok(!content.includes(value), value);
+  for (const value of ["NOTA PRIVADA", "COSTO INTERNO", "private-", "production_status", "invoiced", "COMENTARIO PRIVADO", "completion_note", "FICHA TECNICA PRIVADA", "Tamaño 7 × 5 cm"]) assert.ok(!content.includes(value), value);
   assert.ok(content.includes("Imanes full color"));
 });
 
@@ -31,7 +31,7 @@ test("Genera una nota corta con logo y texto español", async () => {
 });
 
 test("Conserva descripciones largas en varias páginas", async () => {
-  const longItems = Array.from({ length: 8 }, (_, index) => ({ ...items[0], position: index + 1, description: `Trabajo ${index + 1}: folletos, etiquetas y tarjetas personalizadas`, specifications: "Papel ilustración de 115 g. Frente y dorso, tamaño 10 × 15 cm. Terminación especial y corte. ".repeat(10), amount: "12000.00" }));
+  const longItems = Array.from({ length: 8 }, (_, index) => ({ ...items[0], position: index + 1, description: `Trabajo ${index + 1}: folletos, etiquetas y tarjetas personalizadas`, client_description: "Descripción comercial extensa de folletos y tarjetas para el cliente. ".repeat(12), specifications: "Papel ilustración de 115 g. Frente y dorso, tamaño 10 × 15 cm. Terminación especial y corte. ".repeat(10), amount: "12000.00" }));
   const bytes = await buildCommercialPdf(customerOrderDocument(order, longItems), await loadPdfAssets());
   const document = await PDFDocument.load(bytes);
   assert.ok(document.getPageCount() > 1);

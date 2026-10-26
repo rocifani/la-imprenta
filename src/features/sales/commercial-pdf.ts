@@ -1,3 +1,5 @@
+import {wrap,createTextGuard} from "./pdf-text";
+export {PdfCharacterError} from "./pdf-text";
 import { PDFDocument, rgb, type PDFFont } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { documentNumber, formatDate, formatMoney } from "./money";
@@ -14,28 +16,6 @@ const ink = rgb(.14, .15, .13);
 const muted = rgb(.40, .43, .38);
 const rule = rgb(.84, .86, .81);
 
-export class PdfCharacterError extends Error {}
-
-function wrap(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
-  const result: string[] = [];
-  for (const paragraph of text.replace(/\r\n?/g, "\n").split("\n")) {
-    if (!paragraph.trim()) { result.push(""); continue; }
-    let line = "";
-    for (const word of paragraph.trim().split(/\s+/)) {
-      const candidate = line ? `${line} ${word}` : word;
-      if (font.widthOfTextAtSize(candidate, size) <= maxWidth) { line = candidate; continue; }
-      if (line) { result.push(line); line = ""; }
-      // También se dividen palabras largas, correos y códigos sin espacios.
-      for (const character of word) {
-        if (line && font.widthOfTextAtSize(line + character, size) > maxWidth) { result.push(line); line = ""; }
-        line += character;
-      }
-    }
-    if (line) result.push(line);
-  }
-  return result;
-}
-
 export async function buildCommercialPdf(data: CustomerOrderDocument | CustomerQuoteDocument, assets: PdfAssets) {
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
@@ -44,14 +24,7 @@ export async function buildCommercialPdf(data: CustomerOrderDocument | CustomerQ
     pdf.embedFont(assets.bold, { subset: true }),
     pdf.embedPng(assets.logo),
   ]);
-  const characters = new Set(regular.getCharacterSet());
-  const safeText = (value: string) => {
-    const text = value.normalize("NFC").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").replaceAll("\t", " ");
-    if ([...text].some((character) => character !== "\n" && character !== "\r" && !characters.has(character.codePointAt(0)!))) {
-      throw new PdfCharacterError("El documento tiene caracteres que no se pueden representar en el PDF.");
-    }
-    return text;
-  };
+  const safeText=createTextGuard(regular);
   const isQuote = data.kind === "quote";
   const number = documentNumber(isQuote ? "PP" : "NP", data.number);
   const title = isQuote ? "Presupuesto" : "Nota de pedido";

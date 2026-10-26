@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireDesigner, validId } from "./queries";
+import {validTechnicalSheet} from "@/features/production/technical-sheet";
 import { moneyToCents } from "./money";
 import type { FormState } from "./types";
 
@@ -46,7 +47,10 @@ function readItems(form: FormData) {
     if (cents === null || !/^\d{1,8}$/.test(String(item.quantity)) || Number(item.quantity) < 1 || Number(item.quantity) > 10000000) {
       return { error: "Cada trabajo necesita una cantidad y un precio total mayores a cero, con hasta dos decimales." };
     }
-    items.push({ description: String(item.description ?? "").trim(), specifications: String(item.specifications ?? "").trim(), quantity: Number(item.quantity), amount: (cents / 100).toFixed(2) });
+    const clientDescription=String(item.client_description??item.description??"").trim();
+    const sheet=item.technical_sheet??{};
+    if(clientDescription.length<2||clientDescription.length>1000||!validTechnicalSheet(sheet))return {error:"Revisá la descripción para el cliente y la ficha técnica del trabajo."};
+    items.push({ client_description:clientDescription,technical_sheet:sheet,description: String(item.description ?? "").trim(), specifications: String(item.specifications ?? "").trim(), quantity: Number(item.quantity), amount: (cents / 100).toFixed(2) });
   }
   return {items};
 }

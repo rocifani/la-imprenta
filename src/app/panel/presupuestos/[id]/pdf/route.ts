@@ -26,7 +26,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const db = await createSupabaseServerClient();
     const { data, error } = await db.from("quote_versions").select("*").eq("quote_id", id).eq("revision", revision).single();
     if (error) return pdfErrorResponse(error);
-    const { data: oldItems, error: itemsError } = await db.from("quote_items").select("description,specifications,quantity,amount").eq("version_id", data.id).order("position");
+    const { data: oldItems, error: itemsError } = await db.from("quote_items").select("description,specifications,quantity,amount,client_description,technical_sheet").eq("version_id", data.id).order("position");
     if (itemsError) return pdfErrorResponse(itemsError);
     version = data as QuoteVersion; items = oldItems as QuoteItem[];
   }
