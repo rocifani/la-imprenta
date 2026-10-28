@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export function DownloadPdf({ href, filename, label="Descargar PDF para cliente ↓" }: { href: string; filename: string; label?:string }) {
+export function DownloadPdf({ href, filename, label="Descargar PDF para cliente ↓", variant="dark" }: { href: string; filename: string; label?:string; variant?:"dark"|"secondary" }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   async function download() {
@@ -21,5 +21,5 @@ export function DownloadPdf({ href, filename, label="Descargar PDF para cliente 
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No pudimos descargar el PDF."); }
     finally { setPending(false); }
   }
-  return <div className="pdf-download"><button type="button" disabled={pending} className="button dark" onClick={download}>{pending ? "Generando PDF…" : label}</button>{error && <p className="field-error" role="alert">{error}</p>}</div>;
+  return <div className="pdf-download"><button type="button" disabled={pending} className={`button ${variant}`} onClick={download}>{pending ? "Generando PDF…" : label}</button>{error && <p className="field-error" role="alert">{error}</p>}</div>;
 }
