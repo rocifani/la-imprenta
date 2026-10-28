@@ -57,3 +57,7 @@ El 25/10/2026 se revisaron las tres vulnerabilidades reportadas después de la p
 - [Propuesta de modelo de datos](docs/modelo-de-datos.md)
 
 Los documentos distinguen requisitos expresados, propuestas e incógnitas. Las propuestas no representan decisiones aprobadas por la imprenta.
+
+## Publicación de producción
+
+Al pasar cambios a main, GitHub Actions verifica el proyecto, compila con las variables productivas, aplica las migraciones pendientes de Supabase prod y publica en Vercel. La configuración inicial y los cinco secretos están documentados en [Despliegue productivo](docs/despliegue-productivo.md). Dev mantiene sus previews automáticos.
