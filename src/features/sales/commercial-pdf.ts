@@ -80,15 +80,17 @@ export async function buildCommercialPdf(data: CustomerOrderDocument | CustomerQ
   header();
   paragraph("CLIENTE", { size: 8, bold: true, after: 7 });
   paragraph(data.customer.name, { size: 15, bold: true, after: 10 });
+  if(data.customer.contact)paragraph(data.customer.contact,{size:11,after:9});
   for (const [label, value] of [
     ["CUIT", data.customer.cuit ? formatCuit(data.customer.cuit) : ""],
-    ["Contacto", data.customer.contact], ["Teléfono", data.customer.phone],
+    ["Teléfono", data.customer.phone],
     ["Correo", data.customer.email], ["Dirección", data.customer.address],
   ]) if (value) paragraph(`${label}: ${value}`, { size: 10, after: 3 });
   y -= 18;
+  function drawItems(rows:typeof data.items){
   // El encabezado de tabla se repite al continuar en otra página.
   ensure(95); inProducts = true; productHeader();
-  for (const [index, item] of data.items.entries()) {
+  for (const [index, item] of rows.entries()) {
     const titleLines = wrap(safeText(`${index + 1}. ${item.description}`), bold, 11, 316);
     ensure(47);
     continuingProduct = index + 1;
@@ -100,12 +102,19 @@ export async function buildCommercialPdf(data: CustomerOrderDocument | CustomerQ
     y -= 9;
     if (y >= bottom + 15) { line(); y -= 22; }
   }
+  inProducts=false;
+  }
+  if(isQuote&&data.alternatives.length>1){
+   for(const option of data.alternatives){ensure(130);paragraph(option.name+(option.selected?" · Alternativa aprobada":""),{size:13,bold:true});drawItems(option.items);ensure(50);paragraph("Total de esta alternativa: "+formatMoney(option.total),{size:12,bold:true,after:18});}
+  }else drawItems(data.items);
   inProducts = false;
+  if(!isQuote||data.alternatives.length<=1){
   ensure(85);
   y -= 10;
   text(isQuote ? "TOTAL PRESUPUESTADO · ARS" : "TOTAL ACORDADO · ARS", margin, y, 10, bold);
   right(formatMoney(data.total), width - margin, y - 2, 18, bold);
   y -= 26;
+  }
   paragraph("Los importes corresponden al total de cada lote.", { size: 8 });
   if (!isQuote) {
     ensure(100);

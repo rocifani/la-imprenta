@@ -1,0 +1,4 @@
+import {NextRequest,NextResponse} from "next/server";
+import {getTeamAccess} from "@/features/auth/team-access";
+import {createSupabaseServerClient} from "@/lib/supabase/server";
+export async function GET(request:NextRequest){const headers={"Cache-Control":"private, no-store"};const access=await getTeamAccess();if(access.status!=="allowed")return NextResponse.json({error:"Ingresá nuevamente."},{status:401,headers});if(!access.roles.includes("operator"))return NextResponse.json({error:"Sin permiso."},{status:403,headers});const db=await createSupabaseServerClient();const {data,error}=await db.rpc("production_customers",{p_query:(request.nextUrl.searchParams.get("q")??"").slice(0,100).trim()});return error?NextResponse.json({error:"No pudimos buscar."},{status:503,headers}):NextResponse.json({customers:data},{headers});}

@@ -3,7 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import type { Customer } from "./types";
 
-export type CustomerOption = Pick<Customer, "id" | "display_name" | "phone">;
+export type CustomerOption = Pick<Customer, "id" | "display_name" | "phone"> & {contact_name?:string};
 
 export function CustomerPicker({ value, onChange, name = "customer_id", required = false, endpoint = "/panel/clientes/buscar" }: {
   value: CustomerOption | null;

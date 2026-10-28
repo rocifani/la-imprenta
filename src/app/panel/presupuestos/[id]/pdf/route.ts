@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getQuote, validId } from "@/features/sales/queries";
+import { getQuote,getQuoteAlternatives, validId } from "@/features/sales/queries";
 import { customerQuoteDocument } from "@/features/sales/quote-document";
 import { buildCommercialPdf } from "@/features/sales/commercial-pdf";
 import { checkPdfAccess, privatePdfHeaders, pdfResponse, pdfErrorResponse } from "@/features/sales/pdf-response";
@@ -26,12 +26,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const db = await createSupabaseServerClient();
     const { data, error } = await db.from("quote_versions").select("*").eq("quote_id", id).eq("revision", revision).single();
     if (error) return pdfErrorResponse(error);
-    const { data: oldItems, error: itemsError } = await db.from("quote_items").select("description,specifications,quantity,amount,client_description,technical_sheet").eq("version_id", data.id).order("position");
+    const { data: oldItems, error: itemsError } = await db.from("quote_items").select("description,specifications,quantity,amount,client_description,technical_sheet,alternative_id").eq("version_id", data.id).order("position");
     if (itemsError) return pdfErrorResponse(itemsError);
     version = data as QuoteVersion; items = oldItems as QuoteItem[];
   }
+  const alternatives=revision===current.quote.revision?current.alternatives:await getQuoteAlternatives(version.id,items);
   try {
-    const bytes = await buildCommercialPdf(customerQuoteDocument(current.quote, version, items), await loadPdfAssets());
+    const bytes = await buildCommercialPdf(customerQuoteDocument(current.quote, version, items,alternatives), await loadPdfAssets());
     return pdfResponse(bytes, `presupuesto-${documentNumber("PP", current.quote.number)}-v${revision}.pdf`);
   } catch (error) { return pdfErrorResponse(error); }
 }

@@ -1,0 +1,52 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+select plan(30);
+delete from public.team_members;
+insert into auth.users(id,email) values('00000000-0000-4000-8000-000000000701','options.designer@example.test'),('00000000-0000-4000-8000-000000000702','options.operator.a@example.test'),('00000000-0000-4000-8000-000000000703','options.operator.b@example.test'),('00000000-0000-4000-8000-000000000704','options.finance@example.test');
+insert into public.team_members(id,auth_user_id,email,display_name) values
+ ('00000000-0000-4000-8000-000000000711','00000000-0000-4000-8000-000000000701','options.designer@example.test','Diseño'),
+ ('00000000-0000-4000-8000-000000000712','00000000-0000-4000-8000-000000000702','options.operator.a@example.test','Operario A'),
+ ('00000000-0000-4000-8000-000000000713','00000000-0000-4000-8000-000000000703','options.operator.b@example.test','Operario B'),
+ ('00000000-0000-4000-8000-000000000714','00000000-0000-4000-8000-000000000704','options.finance@example.test','Finanzas');
+insert into public.team_member_roles(member_id,role) values('00000000-0000-4000-8000-000000000711','designer'),('00000000-0000-4000-8000-000000000712','operator'),('00000000-0000-4000-8000-000000000713','operator'),('00000000-0000-4000-8000-000000000714','finance');
+set local role authenticated;
+set local "request.jwt.claim.sub"='00000000-0000-4000-8000-000000000701';
+select public.save_customer('00000000-0000-4000-8000-000000000721',null,'{"display_name":"Cliente opciones","contact_name":"Matías"}');
+select lives_ok($$select public.save_quote('00000000-0000-4000-8000-000000000722',null,'','','','[]','00000000-0000-4000-8000-000000000721','Incorrecto','[{"name":"Opción A","items":[{"description":"Folletos A","quantity":500,"amount":"100"}]},{"name":"Opción B","items":[{"description":"Folletos B","quantity":1000,"amount":"200","technical_sheet":{"number_ranges":[{"point_of_sale":"0003","from":"000001","to":"000100"}]}}]}]')$$,'Guarda alternativas completas');
+select is((select count(*) from public.quote_alternatives a join public.quote_versions v on v.id=a.version_id where v.quote_id='00000000-0000-4000-8000-000000000722'),2::bigint,'Conserva ambas alternativas');
+select is((select recipient_contact from public.quote_versions where quote_id='00000000-0000-4000-8000-000000000722'),'Matías','El contacto se toma de la ficha');
+select public.save_customer('00000000-0000-4000-8000-000000000721',1,'{"display_name":"Cliente opciones","contact_name":"Otro contacto"}');
+select is((select recipient_contact from public.quote_versions where quote_id='00000000-0000-4000-8000-000000000722'),'Matías','El PDF anterior conserva su contacto histórico');
+select throws_ok($$select public.approve_quote('00000000-0000-4000-8000-000000000722',1,'')$$,'22023',null,'Requiere elegir una alternativa cuando hay varias');
+select throws_ok($$select public.approve_quote('00000000-0000-4000-8000-000000000722',1,'','00000000-0000-4000-8000-000000000799')$$,'22023',null,'No acepta una alternativa ajena');
+select public.approve_quote('00000000-0000-4000-8000-000000000722',1,'',(select a.id from public.quote_alternatives a join public.quote_versions v on v.id=a.version_id where v.quote_id='00000000-0000-4000-8000-000000000722' and a.position=2));
+select lives_ok($$select public.create_order_from_quote('00000000-0000-4000-8000-000000000722',2,null,null,null,'{"amount":"50","paid_on":"1901-01-15","method":"cash"}','00000000-0000-4000-8000-000000000712')$$,'Genera nota de la alternativa elegida y responsable inicial');
+select is((select total from public.orders where quote_id='00000000-0000-4000-8000-000000000722'),200::numeric,'El total es solo de la opción ganadora');
+select is((select count(*) from public.order_items i join public.orders o on o.id=i.order_id where o.quote_id='00000000-0000-4000-8000-000000000722'),1::bigint,'Las alternativas descartadas no generan trabajos');
+select is((select i.description from public.order_items i join public.orders o on o.id=i.order_id where o.quote_id='00000000-0000-4000-8000-000000000722'),'Folletos B','Copia el trabajo de la alternativa elegida');
+select is((select (public.order_money(id)->>'balance')::numeric from public.orders where quote_id='00000000-0000-4000-8000-000000000722'),150::numeric,'Finanzas calcula deuda contra la opción ganadora');
+select is((select i.technical_sheet->'number_ranges'->0->>'point_of_sale' from public.order_items i join public.orders o on o.id=i.order_id where o.quote_id='00000000-0000-4000-8000-000000000722'),'0003','Conserva punto de venta y ceros iniciales');
+select throws_ok($$select public.approve_quote('00000000-0000-4000-8000-000000000722',2,'',(select a.id from public.quote_alternatives a join public.quote_versions v on v.id=a.version_id where v.quote_id='00000000-0000-4000-8000-000000000722' and a.position=1))$$,'23514',null,'No cambia retroactivamente la opción aprobada');
+select is((select count(*) from public.production_team()),2::bigint,'Solo ofrece destinatarios activos de Producción');
+select public.create_direct_order('00000000-0000-4000-8000-000000000723','00000000-0000-4000-8000-000000000721',null,null,'','[{"description":"Repetición B","quantity":2,"amount":"80"}]',null,null,(select id from public.orders where quote_id='00000000-0000-4000-8000-000000000722'));
+select is((select total from public.orders where id='00000000-0000-4000-8000-000000000723'),80::numeric,'La copia admite otro precio y cantidad');
+select ok((select quote_id is null and not invoiced and assigned_to is null and source_order_id is not null from public.orders where id='00000000-0000-4000-8000-000000000723'),'La copia tiene origen registrado sin heredar factura o responsable');
+select is((public.order_money('00000000-0000-4000-8000-000000000723')->>'paid')::numeric,0::numeric,'La copia no hereda señas ni cobros');
+select is((select production_status from public.order_items where order_id='00000000-0000-4000-8000-000000000723'),'pending','La copia nace pendiente');
+select throws_ok($$select public.create_direct_order('00000000-0000-4000-8000-000000000724','00000000-0000-4000-8000-000000000721',null,null,'','[{"description":"Trabajo","quantity":1,"amount":"20"}]',null,'00000000-0000-4000-8000-000000000714')$$,'22023',null,'No asigna notas a Finanzas sin rol Producción');
+select is((select count(*) from public.orders where id='00000000-0000-4000-8000-000000000724'),0::bigint,'Una asignación inválida revierte la creación');
+set local "request.jwt.claim.sub"='00000000-0000-4000-8000-000000000702';
+select is((public.production_queue(p_customer_id=>'00000000-0000-4000-8000-000000000721',p_assignee=>'mine')->>'total')::integer,1,'Mis asignadas y cliente se combinan');
+select is((public.production_queue(p_customer_id=>'00000000-0000-4000-8000-000000000721',p_assignee=>'unassigned')->>'total')::integer,1,'La copia aparece sin asignar');
+select lives_ok($$select public.assign_production((public.production_queue(p_assignee=>'mine')->'orders'->0->>'id')::uuid,'00000000-0000-4000-8000-000000000713',2,'Impresión lista. Falta corte.')$$,'Producción deriva a otro operario');
+select is((public.production_queue(p_customer_id=>'00000000-0000-4000-8000-000000000721',p_assignee=>'mine')->>'total')::integer,0,'La derivación sale de mis asignadas');
+select is((public.production_queue(p_customer_id=>'00000000-0000-4000-8000-000000000721',p_assignee=>'others')->>'total')::integer,1,'La derivación aparece entre las asignadas a otros');
+select throws_ok($$select public.assign_production((public.production_queue(p_assignee=>'others',p_customer_id=>'00000000-0000-4000-8000-000000000721')->'orders'->0->>'id')::uuid,'00000000-0000-4000-8000-000000000712',2,'Pase viejo')$$,'40001',null,'Dos pases simultáneos no se pisan');
+select throws_ok($$select public.assign_production((public.production_queue(p_assignee=>'others',p_customer_id=>'00000000-0000-4000-8000-000000000721')->'orders'->0->>'id')::uuid,'00000000-0000-4000-8000-000000000712',3,'')$$,'22023',null,'Requiere una indicación al derivar');
+select is(jsonb_array_length(public.production_order((public.production_queue(p_assignee=>'others',p_customer_id=>'00000000-0000-4000-8000-000000000721')->'orders'->0->>'id')::uuid)->'handoffs'),2,'Conserva asignación inicial y pase');
+select ok(not(public.production_order((public.production_queue(p_assignee=>'others',p_customer_id=>'00000000-0000-4000-8000-000000000721')->'orders'->0->>'id')::uuid)?'total'),'La ficha del taller no expone precios');
+set local "request.jwt.claim.sub"='00000000-0000-4000-8000-000000000704';
+select throws_ok($$select public.assign_production('00000000-0000-4000-8000-000000000723','00000000-0000-4000-8000-000000000712',1,'Otro pase')$$,'42501',null,'Finanzas no deriva notas');
+reset role;
+select * from finish();
+rollback;

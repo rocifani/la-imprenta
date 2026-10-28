@@ -32,13 +32,14 @@ export async function getQuote(id: string) {
   if (!quote) notFound();
   const [{ data: version, error: versionError }, { data: items, error: itemsError }, { data: order, error: orderError }] = await Promise.all([
     db.from("quote_versions").select("*").eq("id", quote.current_version_id).single(),
-    db.from("quote_items").select("description, specifications, quantity, amount, client_description, technical_sheet").eq("version_id", quote.current_version_id).order("position"),
+    db.from("quote_items").select("description, specifications, quantity, amount, client_description, technical_sheet, alternative_id").eq("version_id", quote.current_version_id).order("position"),
     db.from("orders").select("id,number").eq("quote_id", id).maybeSingle(),
   ]);
   if (versionError || itemsError || orderError) throw new Error("No pudimos cargar el detalle del presupuesto.");
-  const { data: customer, error: customerError } = quote.customer_id ? await db.from("customers").select("id,display_name,phone").eq("id", quote.customer_id).single() : { data: null, error: null };
+  const { data: customer, error: customerError } = quote.customer_id ? await db.from("customers").select("id,display_name,phone,contact_name").eq("id", quote.customer_id).single() : { data: null, error: null };
   if (customerError) throw new Error("No pudimos cargar el cliente del presupuesto.");
-  return { quote: quote as Quote, version: version as QuoteVersion, items: items as QuoteItem[], order: order as { id: string; number: number } | null, customer: customer as Pick<Customer, "id" | "display_name" | "phone"> | null };
+  const alternatives=await getQuoteAlternatives(quote.current_version_id,items as QuoteItem[]);
+  return { alternatives,quote: quote as Quote, version: version as QuoteVersion, items: items as QuoteItem[], order: order as { id: string; number: number } | null, customer: customer as Pick<Customer, "id" | "display_name" | "phone"> & {contact_name?:string} | null };
 }
 
 export async function getOrder(id: string) {
@@ -68,4 +69,10 @@ export async function getCompletedCustomerSummary(id:string){
  const db=await createSupabaseServerClient();const {data,error}=await db.rpc("customer_completed_summary",{p_customer_id:id});
  if(error)throw new Error("No pudimos cargar los trabajos terminados del cliente.");if(!data)notFound();
  return data as import("./completed-summary").CompletedCustomerSummary;
+}
+
+export async function getQuoteAlternatives(versionId:string,items:QuoteItem[]){
+ const db=await createSupabaseServerClient();const {data,error}=await db.from("quote_alternatives").select("id,name,position").eq("version_id",versionId).order("position");
+ if(error)throw new Error("No pudimos cargar las alternativas.");
+ return (data??[]).map(option=>({...option,items:items.filter(item=>item.alternative_id===option.id)})) as import("./types").QuoteAlternative[];
 }

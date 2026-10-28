@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
+import type {TeamRole} from "@/features/auth/roles";
 import { getTeamAccess } from "@/features/auth/team-access";
 import { PdfCharacterError } from "./commercial-pdf";
 
 export const privatePdfHeaders = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" };
 
-export async function checkPdfAccess() {
+export async function checkPdfAccess(roles:TeamRole[]=["designer"]) {
   const access = await getTeamAccess();
   if (access.status !== "allowed") return NextResponse.json({ error: "Ingresá nuevamente para descargar el documento." }, { status: 401, headers: privatePdfHeaders });
-  if (!access.roles.includes("designer")) return NextResponse.json({ error: "No tenés permiso para descargar este documento." }, { status: 403, headers: privatePdfHeaders });
+  if (!access.roles.some(role=>roles.includes(role))) return NextResponse.json({ error: "No tenés permiso para descargar este documento." }, { status: 403, headers: privatePdfHeaders });
   return null;
 }
 

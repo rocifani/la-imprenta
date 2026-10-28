@@ -62,13 +62,24 @@ export async function saveQuote(_previous: FormState, form: FormData): Promise<F
   const customerId = String(form.get("customer_id") ?? "");
   if (customerId && !validId(customerId)) return { error: "Seleccioná un cliente válido." };
   if (!validId(id) || version === undefined) return { error: "Recargá el formulario antes de guardar." };
-  const parsed = readItems(form);
-  if ("error" in parsed) return parsed;
-  const items = parsed.items;
+  let alternatives: {name:string;items:unknown[]}[]|null=null;
+  if(form.has("alternatives")){
+   let raw:unknown;try{raw=JSON.parse(String(form.get("alternatives")))}catch{return {error:"Revisá las alternativas."}}
+   if(!Array.isArray(raw)||raw.length<1||raw.length>10)return {error:"Agregá entre 1 y 10 alternativas."};
+   alternatives=[];let count=0;
+   for(const option of raw){
+    if(!option||typeof option.name!=="string"||option.name.trim().length<2||option.name.length>120)return {error:"Cada alternativa necesita un nombre."};
+    const input=new FormData();input.set("items",JSON.stringify(option.items));const parsed=readItems(input);if("error" in parsed)return parsed;
+    count+=parsed.items.length;alternatives.push({name:option.name.trim(),items:parsed.items});
+   }
+   if(count>50)return {error:"Hasta 50 trabajos entre todas las alternativas."};
+  }
+  const parsed=alternatives?{items:alternatives[0].items}:readItems(form);if("error" in parsed)return parsed;
+  const items=parsed.items;
   const db = await createSupabaseServerClient();
   const { error } = await db.rpc("save_quote", {
     p_id: id, p_version: version, p_name: String(form.get("recipient_name") ?? "").trim(),
-    p_phone: String(form.get("recipient_phone") ?? "").trim(), p_notes: String(form.get("notes") ?? "").trim(), p_items: items, p_customer_id: customerId || null,
+    p_phone: String(form.get("recipient_phone") ?? "").trim(), p_notes: String(form.get("notes") ?? "").trim(), p_items: items, p_customer_id: customerId || null,p_contact:String(form.get("recipient_contact")??"").trim(),p_alternatives:alternatives,
   });
   if (error) return mutationError(error);
   revalidatePath("/panel/presupuestos");
@@ -83,7 +94,7 @@ export async function approveQuote(_previous: FormState, form: FormData): Promis
   if (!validId(id) || version == null) return { error: "Recargá el presupuesto antes de aprobar." };
   if (form.get("confirmed") !== "on") return { error: "Confirmá primero la aprobación del cliente." };
   const db = await createSupabaseServerClient();
-  const { error } = await db.rpc("approve_quote", { p_id: id, p_version: version, p_note: String(form.get("approval_note") ?? "").trim() });
+  const { error } = await db.rpc("approve_quote", { p_id: id, p_version: version, p_note: String(form.get("approval_note") ?? "").trim(),p_alternative_id:String(form.get("alternative_id")??"")||null });
   if (error) return mutationError(error);
   revalidatePath("/panel/presupuestos");
   redirect(`/panel/presupuestos/${id}`);
@@ -104,11 +115,12 @@ export async function createOrder(_previous: FormState, form: FormData): Promise
   const customerId = String(form.get("customer_id") ?? "");
   const newCustomerId = String(form.get("new_customer_id") ?? "");
   if (!validId(id) || version == null || (customerId && !validId(customerId)) || !validId(newCustomerId)) return { error: "Recargá el formulario antes de generar la nota." };
+ const assigneeId=String(form.get("assignee_id")??"");if(assigneeId&&!validId(assigneeId))return {error:"Elegí un responsable válido."};
  const depositData=readDeposit(form); if("error" in depositData) return depositData;
   const db = await createSupabaseServerClient();
   const { data, error } = await db.rpc("create_order_from_quote", {
     p_quote_id: id, p_version: version, p_customer_id: customerId || null,
-    p_new_customer: customerId ? null : customerData(form), p_new_customer_id: newCustomerId, p_deposit:depositData.deposit,
+    p_new_customer: customerId ? null : customerData(form), p_new_customer_id: newCustomerId, p_deposit:depositData.deposit,p_assignee_id:assigneeId||null,
   });
   if (error) return mutationError(error);
   revalidatePath("/panel/clientes", "layout");
@@ -125,9 +137,11 @@ export async function createDirectOrder(_previous:FormState, form:FormData):Prom
  if (!validId(id) || !validId(newCustomerId) || (customerId && !validId(customerId))) return {error:"Recargá el formulario antes de crear la nota."};
  if(form.get("confirmed")!=="on") return {error:"Confirmá que el trabajo fue acordado con el cliente."};
  const parsed=readItems(form); if("error" in parsed) return parsed;
+ const sourceId=String(form.get("source_order_id")??"");if(sourceId&&!validId(sourceId))return {error:"La nota de origen no es válida."};
+ const assigneeId=String(form.get("assignee_id")??"");if(assigneeId&&!validId(assigneeId))return {error:"Elegí un responsable válido."};
  const depositData=readDeposit(form); if("error" in depositData) return depositData;
  const db=await createSupabaseServerClient();
- const {data,error}=await db.rpc("create_direct_order",{p_id:id,p_customer_id:customerId||null,p_new_customer:customerId?null:customerData(form),p_new_customer_id:newCustomerId,p_notes:String(form.get("order_notes")??"").trim(),p_items:parsed.items,p_deposit:depositData.deposit});
+ const {data,error}=await db.rpc("create_direct_order",{p_id:id,p_customer_id:customerId||null,p_new_customer:customerId?null:customerData(form),p_new_customer_id:newCustomerId,p_notes:String(form.get("order_notes")??"").trim(),p_items:parsed.items,p_deposit:depositData.deposit,p_assignee_id:assigneeId||null,p_source_order_id:sourceId||null});
  if(error) return mutationError(error);
  revalidatePath("/panel/pedidos"); revalidatePath("/panel/finanzas","layout"); revalidatePath("/panel/clientes","layout");
  redirect(`/panel/pedidos/${data}`);

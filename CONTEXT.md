@@ -74,3 +74,18 @@ _Evitar_: Costo estimado como sinónimo de pago realizado.
 **Ficha técnica de producción**: Datos internos de composición, papel, copias, terminaciones, numeración y medidas por trabajo. Diseño la completa; el taller la consulta. No forma parte de los PDFs del cliente.
 
 **Resumen de trabajos terminados del cliente**: Documento comercial con trabajos efectivamente terminados y saldos por nota completa. Excluye trabajos pendientes. Un saldo de nota no se distribuye entre trabajos sin una regla de aplicación de cobros.
+
+
+**Alternativa de presupuesto**: Propuesta completa de trabajos, características e importes que compite con otras propuestas del mismo presupuesto. El cliente elige una sola alternativa para confirmar el encargo.
+
+
+**Responsable de producción**: Usuario con rol Producción al que está asignada actualmente una nota de pedido. La responsabilidad se puede transferir sin cambiar por sí misma el avance de sus trabajos.
+
+
+**Derivación de una nota**: Pase de una nota de pedido de un responsable de producción a otro, con una indicación sobre el trabajo. Una nota puede tener tantos pases como necesite el taller.
+
+**Nota duplicada**: Nueva nota creada a partir de otra, con datos comerciales y técnicos editables y referencia al origen. Tiene fecha y número nuevos; no hereda pagos, facturación, cierres ni pases.
+
+**Punto de venta del trabajo**: Prefijo de cada rango de numeración, separado de los números desde y hasta. Se conserva como texto para mantener los ceros.
+
+Muestras JPG: carga y almacenamiento postergados por decisión expresa del usuario el 27/10/2026.

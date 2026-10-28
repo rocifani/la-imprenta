@@ -19,3 +19,12 @@ export async function completeProduction(_previous:FormState,form:FormData):Prom
  revalidatePath(`/panel/pedidos/${orderId}`);
  return {};
 }
+
+export async function transferProduction(_previous:FormState,form:FormData):Promise<FormState>{
+ await requireOperator();const id=String(form.get("order_id")??""),to=String(form.get("to")??""),revision=Number(form.get("revision")),note=String(form.get("note")??"").trim();
+ if(!validId(id)||!validId(to)||!Number.isSafeInteger(revision)||revision<1)return {error:"Revisá el responsable y recargá la nota."};
+ if(note.length<3||note.length>1000)return {error:"Dejá una indicación de entre 3 y 1000 caracteres."};
+ const db=await createSupabaseServerClient();const {error}=await db.rpc("assign_production",{p_order_id:id,p_to:to,p_revision:revision,p_note:note});
+ if(error)return {error:["22023","23514","40001","42501","P0002"].includes(error.code)?error.message:"No pudimos registrar el pase."};
+ revalidatePath("/panel/produccion","layout");revalidatePath(`/panel/pedidos/${id}`);return {};
+}

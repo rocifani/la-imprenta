@@ -9,7 +9,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test:money": "node --experimental-strip-types --test tests/money.test.mjs",
     "test:dates": "node --experimental-strip-types --test tests/date-range.test.mjs",
-    "test:pdf": "tsx --test tests/order-pdf.test.ts tests/completed-summary-pdf.test.ts",
+    "test:pdf": "tsx --test tests/order-pdf.test.ts tests/completed-summary-pdf.test.ts tests/new-documents.test.ts",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:status": "supabase status",
