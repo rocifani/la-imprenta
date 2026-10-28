@@ -4,15 +4,17 @@ Primera entrega local: estructura Next.js/TypeScript, propuesta visual pública,
 
 Esta entrega no implementa aún la gestión del negocio. El análisis conserva los requisitos objetivo; describir una función allí no significa que ya esté disponible en el código.
 
+Identidad: el logo original recibido está conservado en `public/brand/la-imprenta-logo.png` y se utiliza mediante el componente compartido `Brand` en encabezado, pie y acceso. El resto de la composición gráfica de la landing sigue siendo una propuesta visual.
+
 ## Próximas etapas
 
-1. Configurar el proyecto Supabase de desarrollo y el proveedor Google. Registrar usuarios autorizados, cuenta administradora única y múltiples roles por usuario, con controles del lado del servidor y políticas de acceso a datos.
-2. Clientes y presupuestos directos con precios manuales; notas de varios productos y aprobación previa a producción.
+1. Supabase local y Google están operativos; la usuaria confirmó ingreso y gestión de usuarios. Las 37 pruebas de acceso y usuarios ya se ejecutaron correctamente durante la siguiente entrega.
+2. Clientes y presupuestos directos con precios manuales, versiones, aprobación y notas de varios productos implementados. La migración está aplicada y pasaron 19 pruebas adicionales, 3 de importes, TypeScript y build. Falta el recorrido visual con la usuaria. Ver [alcance del circuito comercial](clientes-presupuestos.md).
 3. Tarifas estándar editables y sugerencias cuando coincidan las características.
 4. Cola de producción, cierre con comentarios y registro manual de facturado.
 5. Finanzas: señas, cobros, pagos, compras, saldos por cliente y resumen mensual.
 6. Recargos y avisos internos de atraso una vez relevadas sus reglas.
 
-La base inicial no usa credenciales, datos reales, recursos externos ni despliegues. El envío de WhatsApp requiere confirmar y configurar el teléfono. Diseño de tablas y permisos pendiente de la etapa 1.
+La base inicial no usa datos reales, recursos alojados ni despliegues. El envío de WhatsApp requiere confirmar y configurar el teléfono. La [propuesta de modelo de datos](modelo-de-datos.md) describe las relaciones previstas; la primera migración de acceso ya se aplicó y verificó con Docker. Ver [Supabase local](supabase-local.md). Los permisos detallados del resto del negocio se implementarán por etapas.
 
 Verificación al 25/10/2026: dependencias instaladas y Next.js actualizado de 16.2.12 a 16.4.3 para corregir los hallazgos de npm. La auditoría de la instalación informó cero vulnerabilidades. Compilación productiva, TypeScript y generación de páginas correctos. Una auditoría independiente posterior no pudo completarse por DNS. Revisión visual pendiente.

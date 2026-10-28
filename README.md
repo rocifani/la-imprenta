@@ -1,6 +1,6 @@
 # La Imprenta
 
-Aplicación en desarrollo. Primera base: Next.js con TypeScript, landing pública, formulario para preparar consultas de WhatsApp y pantalla de acceso del equipo. Supabase, Google y la gestión interna todavía no están conectados.
+Aplicación en desarrollo: Next.js con TypeScript, landing pública y consulta por WhatsApp. Supabase local está conectado y el ingreso real con Google como administradora fue confirmado por la usuaria el 25/10/2026. La gestión del negocio sigue en desarrollo.
 
 Tecnologías elegidas: Next.js, Vercel y Supabase. Desarrollo local; despliegue productivo pendiente.
 
@@ -28,12 +28,19 @@ npm.cmd run build
 - `src/app`: páginas, layout y estilos.
 - `src/components`: componentes visuales compartidos.
 - `src/features/quotes`: preparación de la consulta pública y mensaje de WhatsApp.
-- `/acceso`: informa que el acceso del equipo está pendiente de configuración.
-- `/panel`: redirige al acceso; no hay panel interno abierto ni permisos simulados.
+- `/acceso`: muestra ingreso con Google al completar su configuración; mientras tanto informa que está en preparación.
+- `/panel`: verifica identidad, miembro activo y roles en el servidor; muestra bienvenida y navegación según permisos.
+- `/panel/usuarios`: listado, alta, edición y activación/desactivación del equipo, exclusivo de la administradora. Ver [gestión de usuarios](docs/gestion-de-usuarios.md).
+- `/panel/clientes`, `/panel/presupuestos` y `/panel/pedidos`: circuito de Diseño, con clientes, presupuestos manuales versionados y conversión del acuerdo aprobado a nota de pedido. Ver [alcance y verificación](docs/clientes-presupuestos.md).
+- Desde cada nota de pedido y presupuesto se puede descargar un PDF para el cliente. El presupuesto identifica su versión y estado y permite descargar versiones anteriores.
 
 El catálogo y la identidad visual son una primera propuesta para revisar. Los productos se muestran como referencias de consulta, sin precios públicos. El formulario inicial prepara una consulta de un producto; la lista de varios productos para la consulta pública queda para una siguiente iteración. Las notas internas de varios productos siguen dentro del alcance acordado.
 
-Siguiente etapa: configurar Supabase de desarrollo y Google; implementar usuarios habilitados, roles y acceso protegido. Luego, clientes, presupuestos y notas de pedido. No se crearon recursos externos ni se desplegó la aplicación.
+El ingreso Google y la gestión de usuarios fueron probados por la usuaria. El circuito comercial está implementado con pruebas y compilación aprobadas, pendiente de recorrido visual. Próximas etapas: tarifas sugeridas, producción y finanzas. La configuración productiva es independiente y sigue pendiente.
+
+## Base de datos local
+
+Supabase local está iniciado con sus migraciones de acceso y 20 pruebas aprobadas. Requiere Docker Desktop. Ver [Supabase local](docs/supabase-local.md) y [configuración de Google](docs/google-local.md). `npm.cmd run db:configure` guarda solo la URL y clave pública local; nunca usa la clave administrativa en Next.js.
 
 ## GitHub
 
@@ -47,5 +54,10 @@ El 25/10/2026 se revisaron las tres vulnerabilidades reportadas después de la p
 
 - [Análisis inicial y preguntas](docs/analisis-inicial.md)
 - [Glosario del negocio](CONTEXT.md)
+- [Propuesta de modelo de datos](docs/modelo-de-datos.md)
 
 Los documentos distinguen requisitos expresados, propuestas e incógnitas. Las propuestas no representan decisiones aprobadas por la imprenta.
+
+## Publicación de producción
+
+Al pasar cambios a main, GitHub Actions verifica el proyecto, compila con las variables productivas, aplica las migraciones pendientes de Supabase prod y publica en Vercel. La configuración inicial y los cinco secretos están documentados en [Despliegue productivo](docs/despliegue-productivo.md). Dev mantiene sus previews automáticos.

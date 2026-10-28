@@ -1,0 +1,2 @@
+import type {ProductionMember} from "./team";
+export function AssigneeField({members}:{members:ProductionMember[]}){return <label>Responsable inicial de Producción<select name="assignee_id" defaultValue=""><option value="">Sin asignar por ahora</option>{members.map(member=><option key={member.id} value={member.id}>{member.display_name}</option>)}</select><span className="field-help">Se muestran únicamente usuarios activos con rol Producción.</span></label>;}

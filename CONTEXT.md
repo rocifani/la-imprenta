@@ -16,7 +16,11 @@ _Evitar_: Presupuesto, cuando solo se recibió una consulta.
 **Nota de pedido**: Documento interno que identifica un encargo y reúne los datos necesarios para realizarlo.
 _Evitar_: Factura.
 
-**Trabajo**: Encargo de impresión que debe producir la imprenta. Una nota puede reunir varios productos; falta definir si se llama trabajo a cada producto o al conjunto.
+**Trabajo**: Encargo de impresión que debe producir la imprenta. Una nota puede reunir varios trabajos, cada uno con avance de producción propio.
+
+**Trabajo del pedido**: Ítem de una nota de pedido que puede producirse y marcarse como terminado por separado.
+
+**Cierre de nota completa**: Acción del operario que marca como terminados todos los trabajos pendientes de una nota, conservando los cierres anteriores.
 
 **Muestra del trabajo**: Referencia visual del resultado esperado. No implica que sea el archivo definitivo para imprimir ni que esté aprobada por el cliente.
 
@@ -36,7 +40,7 @@ _Evitar_: Factura.
 
 **Costo de referencia**: Valor configurable de un material o servicio utilizado para preparar presupuestos.
 
-**Tarifa estándar**: Precio de venta de referencia para un producto con características y cantidad definidas, durante una vigencia. Puede corresponder a una unidad o a un lote.
+**Tarifa estándar**: Precio de venta de referencia para un trabajo con características y cantidad definidas, durante una vigencia. Puede corresponder a una unidad o a un lote.
 
 **Precio sugerido**: Importe propuesto como referencia a partir de una tarifa estándar aplicable. Puede ser modificado por quien prepara el presupuesto.
 
@@ -63,3 +67,25 @@ _Evitar_: Costo estimado como sinónimo de pago realizado.
 **Recargo por atraso**: Importe adicional por demora de pago según una regla configurable. Su cálculo y modalidad de aplicación están pendientes de definición.
 
 **Compra**: Adquisición de materiales o servicios para la imprenta. Su registro no implica por sí mismo que se haya pagado.
+
+
+**Descripción para el cliente**: Texto simple por trabajo que aparece en los documentos comerciales. Se mantiene separado de las indicaciones internas y la ficha técnica.
+
+**Ficha técnica de producción**: Datos internos de composición, papel, copias, terminaciones, numeración y medidas por trabajo. Diseño la completa; el taller la consulta. No forma parte de los PDFs del cliente.
+
+**Resumen de trabajos terminados del cliente**: Documento comercial con trabajos efectivamente terminados y saldos por nota completa. Excluye trabajos pendientes. Un saldo de nota no se distribuye entre trabajos sin una regla de aplicación de cobros.
+
+
+**Alternativa de presupuesto**: Propuesta completa de trabajos, características e importes que compite con otras propuestas del mismo presupuesto. El cliente elige una sola alternativa para confirmar el encargo.
+
+
+**Responsable de producción**: Usuario con rol Producción al que está asignada actualmente una nota de pedido. La responsabilidad se puede transferir sin cambiar por sí misma el avance de sus trabajos.
+
+
+**Derivación de una nota**: Pase de una nota de pedido de un responsable de producción a otro, con una indicación sobre el trabajo. Una nota puede tener tantos pases como necesite el taller.
+
+**Nota duplicada**: Nueva nota creada a partir de otra, con datos comerciales y técnicos editables y referencia al origen. Tiene fecha y número nuevos; no hereda pagos, facturación, cierres ni pases.
+
+**Punto de venta del trabajo**: Prefijo de cada rango de numeración, separado de los números desde y hasta. Se conserva como texto para mantener los ceros.
+
+Muestras JPG: carga y almacenamiento postergados por decisión expresa del usuario el 27/10/2026.
