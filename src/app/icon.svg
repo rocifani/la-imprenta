@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>La Imprenta</title>
+  <rect width="64" height="64" rx="13" fill="#fffefa"/>
+  <path d="M7 48h50v4H7z" fill="#ffed00"/>
+  <path d="M7 52h50v4H7z" fill="#00a6cf"/>
+  <path d="M7 56h50v4H7z" fill="#df0084"/>
+  <path d="M25 7h13L27 43h22l-3 10H11z" fill="#21150f"/>
+</svg>
