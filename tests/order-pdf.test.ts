@@ -78,3 +78,7 @@ test("Genera PDF de presupuestos aprobados y versiones anteriores como borrador"
  await writeFile("tmp/pdfs/nota-con-sena.pdf",bytes);
  assert.ok(bytes.length>1000);
  });
+
+test("El PDF comercial recibe descripción general sin la ficha técnica común",async()=>{const data=customerOrderDocument({...order,work_description:"Imanes de animales: delfines y tortugas",technical_sheet:{observations:"TECNICA GENERAL PRIVADA"}},items);assert.equal(data.workDescription,"Imanes de animales: delfines y tortugas");assert.ok(!JSON.stringify(data).includes("TECNICA GENERAL PRIVADA"));await writeFile("tmp/pdfs/nota-cliente-general.pdf",await buildCommercialPdf(data,await loadPdfAssets()));});
+
+test("La nota general extensa continúa en páginas nuevas sin perder su final",async()=>{const data=customerOrderDocument({...order,work_description:("Descripción general del trabajo y sus modelos.\n".repeat(40))+"FIN_NOTA_GENERAL"},items);const bytes=await buildCommercialPdf(data,await loadPdfAssets());assert.ok((await PDFDocument.load(bytes)).getPageCount()>1);await writeFile("tmp/pdfs/nota-general-extensa.pdf",bytes);});

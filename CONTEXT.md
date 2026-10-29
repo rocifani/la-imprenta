@@ -71,7 +71,7 @@ _Evitar_: Costo estimado como sinónimo de pago realizado.
 
 **Descripción para el cliente**: Texto simple por trabajo que aparece en los documentos comerciales. Se mantiene separado de las indicaciones internas y la ficha técnica.
 
-**Ficha técnica de producción**: Datos internos de composición, papel, copias, terminaciones, numeración y medidas por trabajo. Diseño la completa; el taller la consulta. No forma parte de los PDFs del cliente.
+**Ficha técnica de producción**: Datos internos de composición, papel, copias, terminaciones, numeración y medidas comunes a todos los ítems de una nota. Se carga una sola vez por nota; Diseño la completa y el taller la consulta. No forma parte de los PDFs del cliente.
 
 **Resumen de trabajos terminados del cliente**: Documento comercial con trabajos efectivamente terminados y saldos por nota completa. Excluye trabajos pendientes. Un saldo de nota no se distribuye entre trabajos sin una regla de aplicación de cobros.
 
@@ -89,3 +89,7 @@ _Evitar_: Costo estimado como sinónimo de pago realizado.
 **Punto de venta del trabajo**: Prefijo de cada rango de numeración, separado de los números desde y hasta. Se conserva como texto para mantener los ceros.
 
 Muestras JPG: carga y almacenamiento postergados por decisión expresa del usuario el 27/10/2026.
+
+**Trabajo general de la nota**: Descripción comercial común del encargo (ej.: imanes promocionales). Se muestra antes de los ítems en los PDFs de la nota.
+
+**Ítem / modelo de la nota**: Variante dentro del trabajo general (ej.: delfines o tortugas), con cantidad, precio e indicaciones particulares. Conserva su cierre de producción independiente. Las fichas técnicas anteriores por ítem pueden descartarse, autorizado por Rocío el 29/10/2026.

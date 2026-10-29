@@ -1,3 +1,11 @@
 import type {ProductionOrder} from "./queries";
-export function workshopDocument(order:ProductionOrder){return {number:order.number,date:order.created_at,customer:order.customer_name,notes:order.notes,responsible:order.assignee_name??"Sin asignar",handoffs:order.handoffs.map(h=>({from:h.from_name??"Sin asignar",to:h.to_name,note:h.note,date:h.created_at})),items:order.items.map(item=>({name:item.description,quantity:item.quantity,instructions:item.specifications,sheet:item.technical_sheet??{},completed:item.production_status==="completed",completion_note:item.completion_note}))};}
+export function workshopDocument(order:ProductionOrder){
+ return {
+  number:order.number,date:order.created_at,customer:order.customer_name,
+  description:order.work_description??"",sheet:order.technical_sheet??{},
+  notes:order.notes,responsible:order.assignee_name??"Sin asignar",
+  handoffs:order.handoffs.map(h=>({from:h.from_name??"Sin asignar",to:h.to_name,note:h.note,date:h.created_at})),
+  items:order.items.map(item=>({name:item.description,quantity:item.quantity,instructions:item.specifications,completed:item.production_status==="completed",completion_note:item.completion_note})),
+ };
+}
 export type WorkshopDocument=ReturnType<typeof workshopDocument>;

@@ -1,4 +1,7 @@
 "use client";
+import {OrderWorkFields} from "@/features/production/order-work-fields";
+import type {TechnicalSheet} from "@/features/production/technical-sheet";
+
 import {PaymentFields} from "@/features/finance/payment-fields";
 import {AssigneeField} from "@/features/production/assignee-field";
 import type {ProductionMember} from "@/features/production/team";
@@ -10,7 +13,7 @@ import {CustomerFields} from "./customer-fields";
 import {CustomerPicker,type CustomerOption} from "./customer-picker";
 import {ProductsEditor,type EditableItem} from "./products-editor";
 import {moneyToCents,formatMoney} from "./money";
-export function DirectOrderForm({id,newCustomerId,customer,members=[],items,notes="",sourceOrderId}:{id:string;newCustomerId:string;customer:CustomerOption|null;members?:ProductionMember[];items?:OrderItem[];notes?:string;sourceOrderId?:string}) {
+export function DirectOrderForm({id,newCustomerId,customer,members=[],items,notes="",sourceOrderId,workDescription="",technicalSheet={}}:{id:string;newCustomerId:string;customer:CustomerOption|null;members?:ProductionMember[];items?:OrderItem[];notes?:string;sourceOrderId?:string;workDescription?:string;technicalSheet?:TechnicalSheet}) {
  const [state,action,pending]=useActionState(createDirectOrder,{});
  const [mode,setMode]=useState("existing");
  const [selected,setSelected]=useState(customer);
@@ -22,7 +25,7 @@ export function DirectOrderForm({id,newCustomerId,customer,members=[],items,note
  {state.error && <p role="alert" className="form-alert">{state.error}</p>}
  <fieldset disabled={pending} className="form-fields">
  <section className="business-card"><h2>Cliente</h2><label>Ficha del cliente<select value={mode} onChange={e=>setMode(e.target.value)}><option value="existing">Usar un cliente existente</option><option value="new">Dar de alta un cliente</option></select></label>{mode==="existing"?<CustomerPicker value={selected} required onChange={setSelected}/>:<CustomerFields/>}</section>
- <section className="business-card"><AssigneeField members={members}/></section><ProductsEditor products={products} setProducts={setProducts}/>
+ <section className="business-card"><AssigneeField members={members}/></section><section className="business-card"><OrderWorkFields description={workDescription} sheet={technicalSheet}/></section><ProductsEditor products={products} setProducts={setProducts} itemLabel="Ítem"/>
  <section className="business-card"><label>Observaciones internas del pedido<textarea name="order_notes" maxLength={2000} rows={3} defaultValue={notes}/></label><div className="quote-total"><span>Total acordado · ARS</span><strong>{total===null?"Completá los precios":formatMoney(total)}</strong></div><PaymentFields deposit/><label className="checkbox-row"><input type="checkbox" name="confirmed" required/><span>Confirmo que el trabajo y el precio fueron acordados con el cliente.</span></label><p className="field-help">La nota se crea como trabajo confirmado, con sus trabajos pendientes de producción.</p></section>
  <div className="form-actions"><button className="button dark">{pending?"Creando…":"Crear nota de pedido"}</button><Link className="button secondary" href="/panel/pedidos">Cancelar</Link></div>
  </fieldset></form>;

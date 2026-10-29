@@ -17,7 +17,7 @@
     "db:test": "supabase test db",
     "db:configure": "node scripts/configure-local.mjs",
     "db:admin": "node scripts/bootstrap-local-admin.mjs",
-    "test:technical": "tsx --test tests/technical-sheet.test.ts",
+    "test:technical": "tsx --test tests/technical-sheet.test.ts tests/order-header.test.ts",
     "test:deployment": "node --test tests/deployment-config.test.mjs"
   },
   "dependencies": {

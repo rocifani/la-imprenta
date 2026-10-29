@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireDesigner, validId } from "./queries";
+import {readOrderHeader} from "@/features/production/order-header";
 import {validTechnicalSheet} from "@/features/production/technical-sheet";
 import { moneyToCents } from "./money";
 import type { FormState } from "./types";
@@ -116,11 +117,12 @@ export async function createOrder(_previous: FormState, form: FormData): Promise
   const newCustomerId = String(form.get("new_customer_id") ?? "");
   if (!validId(id) || version == null || (customerId && !validId(customerId)) || !validId(newCustomerId)) return { error: "Recargá el formulario antes de generar la nota." };
  const assigneeId=String(form.get("assignee_id")??"");if(assigneeId&&!validId(assigneeId))return {error:"Elegí un responsable válido."};
+ const header=readOrderHeader(form);if("error" in header)return header;
  const depositData=readDeposit(form); if("error" in depositData) return depositData;
   const db = await createSupabaseServerClient();
   const { data, error } = await db.rpc("create_order_from_quote", {
     p_quote_id: id, p_version: version, p_customer_id: customerId || null,
-    p_new_customer: customerId ? null : customerData(form), p_new_customer_id: newCustomerId, p_deposit:depositData.deposit,p_assignee_id:assigneeId||null,
+    p_new_customer: customerId ? null : customerData(form), p_new_customer_id: newCustomerId, p_deposit:depositData.deposit,p_assignee_id:assigneeId||null,p_description:header.description,p_technical_sheet:header.sheet,
   });
   if (error) return mutationError(error);
   revalidatePath("/panel/clientes", "layout");
@@ -139,9 +141,10 @@ export async function createDirectOrder(_previous:FormState, form:FormData):Prom
  const parsed=readItems(form); if("error" in parsed) return parsed;
  const sourceId=String(form.get("source_order_id")??"");if(sourceId&&!validId(sourceId))return {error:"La nota de origen no es válida."};
  const assigneeId=String(form.get("assignee_id")??"");if(assigneeId&&!validId(assigneeId))return {error:"Elegí un responsable válido."};
+ const header=readOrderHeader(form);if("error" in header)return header;
  const depositData=readDeposit(form); if("error" in depositData) return depositData;
  const db=await createSupabaseServerClient();
- const {data,error}=await db.rpc("create_direct_order",{p_id:id,p_customer_id:customerId||null,p_new_customer:customerId?null:customerData(form),p_new_customer_id:newCustomerId,p_notes:String(form.get("order_notes")??"").trim(),p_items:parsed.items,p_deposit:depositData.deposit,p_assignee_id:assigneeId||null,p_source_order_id:sourceId||null});
+ const {data,error}=await db.rpc("create_direct_order",{p_id:id,p_customer_id:customerId||null,p_new_customer:customerId?null:customerData(form),p_new_customer_id:newCustomerId,p_notes:String(form.get("order_notes")??"").trim(),p_items:parsed.items,p_deposit:depositData.deposit,p_assignee_id:assigneeId||null,p_source_order_id:sourceId||null,p_description:header.description,p_technical_sheet:header.sheet});
  if(error) return mutationError(error);
  revalidatePath("/panel/pedidos"); revalidatePath("/panel/finanzas","layout"); revalidatePath("/panel/clientes","layout");
  redirect(`/panel/pedidos/${data}`);
