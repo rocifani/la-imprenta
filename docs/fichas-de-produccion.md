@@ -8,7 +8,7 @@ La descripción general y la ficha se cargan una sola vez al crear una nota dire
 
 La composición admite hasta 20 componentes con tipo de trabajo, cantidad, copias, color del papel, gramaje, perforado y ojalado. Incluye formularios, observaciones, impresión, block/talonario, referencia del original, medidas, rendimiento, formato, hojas y clave de imprenta. Numeración admite hasta 10 rangos con punto de venta, desde y hasta, conservando los ceros. No calcula costos ni rendimientos automáticamente.
 
-Diseño puede editar la descripción y ficha general, además de las descripciones comerciales e indicaciones por ítem. No cambia cantidades, precios, cliente, cobros, estados ni comentarios de cierre. La revisión de ficha detecta cambios concurrentes y registra autor y fecha. Producción consulta una sola ficha común y sigue cerrando ítems individualmente o la nota completa.
+Diseño puede editar la descripción y ficha general, además de las descripciones comerciales e indicaciones por ítem, únicamente mientras la nota no tenga cobros (incluida seña) ni ningún ítem terminado. Desde «Editar nota e ítems» también puede cambiar nombres, cantidades, precios y observaciones, agregar o quitar ítems. No cambia cliente, presupuesto de origen, cobros ni cierres. La revisión de ficha detecta cambios concurrentes y registra autor y fecha. Producción consulta una sola ficha común y sigue cerrando ítems individualmente o la nota completa.
 
 ## PDFs de la nota
 
@@ -33,3 +33,15 @@ El resumen se obtiene completo, sin depender de las 20 filas del historial pagin
 Se aplicó y probó la migración localmente: 230 pruebas SQL aprobadas, incluyendo 22 casos de ficha general y compatibilidad con el circuito anterior. Se verifican alta, copia, conversión, ceros, validación, revisión concurrente, permisos y conservación de cobros y cierres. Las pruebas PDF y de campos comunes verifican privacidad, ficha única y paginación; los documentos renderizados se revisaron visualmente. La vista de alta con dos ítems muestra una sola ficha a 390 y 1100 px, sin desbordamiento horizontal, con datos ficticios.
 
 El pase a producción se realiza mediante el workflow al mergear a main. No se publicó ni se modificó prod durante esta implementación.
+
+## Edición de ítems y borrado definitivo (migración 020)
+
+Decisión de Rocío: una nota con algún cobro, incluida una seña, o con al menos un ítem terminado no puede editarse ni eliminarse. Se bloquean tanto el nuevo editor como el anterior de ficha. El control SQL toma el mismo bloqueo de fila usado por cobros y cierres de producción, además de comprobar la revisión de la nota; un formulario abierto antes de un cobro/cierre no puede evadir la regla.
+
+El editor conserva las identidades de los ítems existentes, permite agregar y quitar, recalcula total/saldo a partir de los importes por lote y mantiene cliente, presupuesto, responsable, pases y fecha de alta. Los nuevos ítems quedan pendientes. La edición comparte revisión con la ficha general. El presupuesto aprobado original no se modifica.
+
+El borrado es físico y exige confirmación con el número de nota visible. Elimina la nota, ítems, ficha y pases, conservando cliente, presupuesto y notas duplicadas independientes. Las copias pierden solamente su referencia a la nota de origen borrada. Los números no se reutilizan. Nunca elimina movimientos de dinero: su existencia bloquea la operación.
+
+Los RPC edit_order y delete_order requieren Diseño; los helpers privados no son ejecutables por authenticated. Los listados de Diseño, Producción, Facturación, Finanzas y ficha del cliente se revalidan después de guardar o borrar.
+
+Verificación: 276 pruebas SQL, incluyendo 46 casos de edición/borrado y bloqueo por pago, seña, finalización parcial, revisión, permisos, copias, pases y presupuesto. Migración aplicada localmente y a Supabase dev. Producción se actualiza mediante el workflow de main.
