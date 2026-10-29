@@ -30,12 +30,12 @@ select ok(not(public.production_order('00000000-0000-4000-8000-000000000822')?'t
 select throws_ok($$select public.save_order_work_details('00000000-0000-4000-8000-000000000822',1,'[]','Cambio','{}')$$,'42501',null,'Producción no edita la ficha de Diseño');
 select public.complete_production('00000000-0000-4000-8000-000000000822',null,'Cierre de ítems');
 set local "request.jwt.claim.sub"='00000000-0000-4000-8000-000000000801';
-select lives_ok($$select public.save_order_work_details('00000000-0000-4000-8000-000000000822',1,(select jsonb_agg(jsonb_build_object('id',id,'client_description',client_description,'specifications',specifications,'technical_sheet','{}'::jsonb)) from public.order_items where order_id='00000000-0000-4000-8000-000000000822'),'Imanes terminados','{"printing_color":"Negro"}')$$,'Se puede editar la descripción y ficha general');
-select is((select technical_sheet->>'printing_color' from public.orders where id='00000000-0000-4000-8000-000000000822'),'Negro','Guarda la ficha nueva');
+select throws_ok($$select public.save_order_work_details('00000000-0000-4000-8000-000000000822',1,(select jsonb_agg(jsonb_build_object('id',id,'client_description',client_description,'specifications',specifications,'technical_sheet','{}'::jsonb)) from public.order_items where order_id='00000000-0000-4000-8000-000000000822'),'Imanes terminados','{"printing_color":"Negro"}')$$,'23514',null,'No se edita una nota cobrada y terminada');
+select is((select technical_sheet->>'printing_color' from public.orders where id='00000000-0000-4000-8000-000000000822'),'Color','Conserva la ficha al rechazar edición');
 select is((select total from public.orders where id='00000000-0000-4000-8000-000000000822'),300::numeric,'Editar ficha no cambia importes');
 select is((public.order_money('00000000-0000-4000-8000-000000000822')->>'paid')::numeric,40::numeric,'Editar ficha no cambia cobros');
 select is((select count(*) from public.order_items where order_id='00000000-0000-4000-8000-000000000822' and production_status='completed'),2::bigint,'Editar ficha conserva cierres de ítems');
-select throws_ok($$select public.save_order_work_details('00000000-0000-4000-8000-000000000822',1,'[]','Cambio viejo','{}')$$,'40001',null,'La revisión impide sobrescribir cambios concurrentes');
+select throws_ok($$select public.save_order_work_details('00000000-0000-4000-8000-000000000822',1,'[]','Cambio viejo','{}')$$,'23514',null,'La nota cerrada sigue bloqueada en un formulario viejo');
 select ok(not has_function_privilege('authenticated','private.save_order_items_before_header(uuid,integer,jsonb)','EXECUTE'),'No permite omitir la validación pública');
 reset role;
 select * from finish();

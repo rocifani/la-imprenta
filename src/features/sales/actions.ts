@@ -37,7 +37,7 @@ export async function saveCustomer(_previous: FormState, form: FormData): Promis
   redirect(`/panel/clientes/${id}?saved=1`);
 }
 
-function readItems(form: FormData) {
+function readItems(form: FormData, preserveIds=false) {
   let source: unknown;
   try { source = JSON.parse(String(form.get("items") ?? "[]")); } catch { return { error: "Revisá los trabajos." }; }
   if (!Array.isArray(source) || source.length < 1 || source.length > 50) return { error: "Agregá entre 1 y 50 trabajos." };
@@ -51,7 +51,8 @@ function readItems(form: FormData) {
     const clientDescription=String(item.client_description??item.description??"").trim();
     const sheet=item.technical_sheet??{};
     if(clientDescription.length<2||clientDescription.length>1000||!validTechnicalSheet(sheet))return {error:"Revisá la descripción para el cliente y la ficha técnica del trabajo."};
-    items.push({ client_description:clientDescription,technical_sheet:sheet,description: String(item.description ?? "").trim(), specifications: String(item.specifications ?? "").trim(), quantity: Number(item.quantity), amount: (cents / 100).toFixed(2) });
+    if(preserveIds&&item.id!=null&&!validId(String(item.id)))return {error:"Recargá la nota antes de guardar los ítems."};
+    items.push({ ...(preserveIds?{id:item.id??null}:{}),client_description:clientDescription,technical_sheet:sheet,description: String(item.description ?? "").trim(), specifications: String(item.specifications ?? "").trim(), quantity: Number(item.quantity), amount: (cents / 100).toFixed(2) });
   }
   return {items};
 }
@@ -148,4 +149,26 @@ export async function createDirectOrder(_previous:FormState, form:FormData):Prom
  if(error) return mutationError(error);
  revalidatePath("/panel/pedidos"); revalidatePath("/panel/finanzas","layout"); revalidatePath("/panel/clientes","layout");
  redirect(`/panel/pedidos/${data}`);
+}
+
+function refreshOrders(){
+ for(const path of ["/panel/pedidos","/panel/produccion","/panel/facturacion","/panel/finanzas","/panel/clientes","/panel/presupuestos"])revalidatePath(path,"layout");
+}
+export async function editOrder(_previous:FormState,form:FormData):Promise<FormState>{
+ await requireDesigner();
+ const id=String(form.get("order_id")??""),revision=Number(form.get("revision"));
+ if(!validId(id)||!Number.isSafeInteger(revision)||revision<1)return {error:"Recargá la nota antes de guardar."};
+ const parsed=readItems(form,true);if("error" in parsed)return parsed;
+ const header=readOrderHeader(form);if("error" in header)return header;
+ const db=await createSupabaseServerClient();const {error}=await db.rpc("edit_order",{p_order_id:id,p_revision:revision,p_items:parsed.items,p_description:header.description,p_technical_sheet:header.sheet,p_notes:String(form.get("order_notes")??"").trim()});
+ if(error)return mutationError(error);
+ refreshOrders();redirect("/panel/pedidos/"+id+"?saved=1");
+}
+export async function deleteOrder(_previous:FormState,form:FormData):Promise<FormState>{
+ await requireDesigner();
+ const id=String(form.get("order_id")??""),revision=Number(form.get("revision")),number=Number(form.get("number"));
+ if(!validId(id)||!Number.isSafeInteger(revision)||revision<1||!Number.isSafeInteger(number)||number<1)return {error:"Recargá la nota antes de eliminar."};
+ const db=await createSupabaseServerClient();const {error}=await db.rpc("delete_order",{p_order_id:id,p_revision:revision,p_number:number});
+ if(error)return mutationError(error);
+ refreshOrders();redirect("/panel/pedidos?deleted=1");
 }

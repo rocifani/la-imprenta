@@ -18,7 +18,7 @@ export async function saveOrderSheet(_previous:FormState,form:FormData):Promise<
  }
  const header=readOrderHeader(form);if("error" in header)return header;
  const db=await createSupabaseServerClient();const {error}=await db.rpc("save_order_work_details",{p_order_id:id,p_revision:revision,p_items:items,p_description:header.description,p_technical_sheet:header.sheet});
- if(error)return {error:["22023","40001","42501","P0002"].includes(error.code)?error.message:"No pudimos guardar la ficha."};
+ if(error)return {error:["22023","23514","40001","42501","P0002"].includes(error.code)?error.message:"No pudimos guardar la ficha."};
  revalidatePath(`/panel/pedidos/${id}`);revalidatePath(`/panel/produccion/${id}`);revalidatePath("/panel/clientes","layout");
  redirect(`/panel/pedidos/${id}?sheet_saved=1`);
 }

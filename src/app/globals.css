@@ -78,3 +78,20 @@
 .order-row-actions{display:flex;flex-direction:column;gap:12px;min-width:112px;align-items:stretch}
 .order-row-actions .button{min-height:40px;padding:10px 14px;font-size:12px;border-radius:7px;white-space:nowrap;transform:none}
 @media(max-width:680px){.order-actions{grid-template-columns:minmax(0,1fr);gap:22px;padding:18px}.order-action-group+.order-action-group{border-top:1px solid var(--line);padding-top:20px}}
+
+/* Selección de clientes con resultados en el mismo campo. */
+.customer-picker{min-width:0}.customer-picker>label{display:block;margin:0 0 8px;font-size:12px;font-weight:600}
+.customer-search-field{position:relative;min-width:0}
+.customer-search-field>input{width:100%;min-height:46px;padding-right:46px}
+.customer-picker-clear{position:absolute;right:5px;top:5px;width:36px;height:36px;border:0;border-radius:5px;background:transparent;color:var(--muted);font-size:23px;line-height:1;display:grid;place-items:center}
+.customer-picker-clear:hover{background:#eceee5;color:var(--ink)}
+.customer-search-menu{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:40;max-height:min(310px,45vh);overflow:auto;overscroll-behavior:contain;background:var(--white);border:1px solid #c8cdbf;border-radius:7px;box-shadow:0 10px 28px #24282120}
+.customer-search-menu ul{list-style:none;margin:0;padding:5px}
+.customer-search-menu [role=option]{padding:11px 12px;border-radius:4px;cursor:pointer;min-height:44px;overflow-wrap:anywhere;color:var(--ink);font-size:14px;line-height:1.5}
+.customer-search-menu [role=option].is-active{background:#edf1df}
+.customer-search-menu [role=option]>span{display:block;font-weight:600}.customer-search-menu [role=option]>small{display:block;font-size:12px;color:#59604f;margin-top:2px}
+.customer-search-status{padding:12px 16px;margin:0;font-size:12px;line-height:1.6;color:var(--muted)}.customer-search-status p{margin:0}
+.filter-grid .customer-picker{margin:0;max-width:none}.filter-grid .customer-picker .field-help{margin:7px 0 0}
+@media(max-width:680px){.customer-search-field>input{font-size:16px}.customer-search-menu [role=option]{padding:12px;min-height:48px}}
+
+.order-delete-group,.order-edit-block{grid-column:1/-1}.order-delete-group{border-top:1px solid var(--line);padding-top:18px;margin-top:4px}.button.danger{background:#fff7f5;color:#922b24;border:1px solid #d9a9a4}.button.danger:hover{background:#fae7e4}.delete-order-form{margin-top:10px}
