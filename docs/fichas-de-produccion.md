@@ -1,14 +1,26 @@
 # Fichas de producción y documentos para clientes
 
-Cada trabajo conserva su nombre comercial, cantidad e importe y suma dos campos: descripción simple para el cliente y ficha técnica interna. Las características anteriores se conservan como indicaciones internas. La descripción simple se usa en PDFs de notas y presupuestos; no se envían indicaciones técnicas, comentarios del operario ni la ficha técnica al cliente. En registros anteriores se toma el nombre del trabajo como descripción inicial, que Diseño puede completar.
+Desde el 29/10/2026, una nota representa un trabajo general (por ejemplo, imanes promocionales) con varios ítems o modelos (delfines, tortugas). Cada nota tiene una descripción general comercial y una única ficha técnica interna, común a todos sus ítems. Cada ítem mantiene nombre, descripción para el cliente, indicaciones específicas, cantidad, precio y cierre de producción.
 
 ## Carga y consulta
 
-El editor compartido de presupuestos y notas directas permite cargar la descripción y desplegar la ficha técnica. La composición admite hasta 20 componentes con tipo de trabajo, cantidad, copias por juego, color del papel, gramaje, perforado y ojalado. También incluye formularios, observaciones, color de impresión, block/talonario, referencia del original, medidas con unidad, rendimiento por pliego, formato, hojas y clave de imprenta. Numeración admite hasta 10 rangos y conserva letras y ceros iniciales. Los datos son indicaciones; no se calcula precio, rendimiento o numeración automáticamente. La referencia del original es texto, no un archivo adjunto.
+La descripción general y la ficha se cargan una sola vez al crear una nota directa, generar una nota desde un presupuesto aprobado o editar una nota existente. Los presupuestos mantienen el detalle comercial por ítem; la ficha técnica se completa al preparar la nota. Duplicar una nota precarga su descripción y ficha general, pero no copia pagos, facturación, cierres ni responsables.
 
-Las versiones del presupuesto conservan su ficha; la nota copia la versión aprobada. Desde una nota existente, **Completar / editar ficha de producción** permite a Diseño actualizar la descripción para el cliente y la información técnica. No cambia cantidades, precios, cliente, cobros, estados ni comentarios de cierre. La revisión de ficha evita que dos usuarios sobrescriban cambios simultáneos y se registra autor y fecha de modificación.
+La composición admite hasta 20 componentes con tipo de trabajo, cantidad, copias, color del papel, gramaje, perforado y ojalado. Incluye formularios, observaciones, impresión, block/talonario, referencia del original, medidas, rendimiento, formato, hojas y clave de imprenta. Numeración admite hasta 10 rangos con punto de venta, desde y hasta, conservando los ceros. No calcula costos ni rendimientos automáticamente.
 
-Producción ve la ficha con tabla de componentes, numeración e indicaciones por trabajo, sin acceso adicional a precios. Operarios siguen marcando finalización individual o completa. La edición de ficha es de Diseño.
+Diseño puede editar la descripción y ficha general, además de las descripciones comerciales e indicaciones por ítem. No cambia cantidades, precios, cliente, cobros, estados ni comentarios de cierre. La revisión de ficha detecta cambios concurrentes y registra autor y fecha. Producción consulta una sola ficha común y sigue cerrando ítems individualmente o la nota completa.
+
+## PDFs de la nota
+
+Cliente: cliente y contacto a la derecha del logo; número y fecha a la izquierda. La descripción general se destaca en un recuadro gris al comienzo, antes de los ítems. Conserva cantidades, importes, seña, cobros y saldo. Excluye la ficha técnica y las indicaciones internas.
+
+Taller: cliente a la derecha; descripción general en el mismo recuadro gris; ítems con cantidad y estado; una sola ficha común y último pase. Sin importes, cobros ni saldo. Textos largos continúan en páginas nuevas sin truncarse. El presupuesto conserva su presentación anterior, con cliente y contacto debajo del encabezado.
+
+## Migración y compatibilidad
+
+La migración 20261029001900_order_general_work_details.sql añade work_description y technical_sheet a orders. Por autorización expresa de Rocío, vacía las fichas técnicas anteriores de order_items, sin trasladarlas a la ficha general. Las notas anteriores empiezan con la ficha general vacía; el resto de sus datos se conserva.
+
+Los RPC de alta, conversión y edición aceptan los campos comunes y mantienen defaults para clientes anteriores. Las llamadas reintentadas no sobrescriben la descripción o ficha de una nota ya creada. Los helpers privados no son accesibles a usuarios autenticados. El taller recibe una proyección explícita sin datos financieros.
 
 ## Resumen descargable del cliente
 
@@ -18,4 +30,6 @@ El resumen se obtiene completo, sin depender de las 20 filas del historial pagin
 
 ## Datos y pruebas
 
-Migraciones 20261025001500_work_sheets_and_customer_summary.sql y 20261025001600_completed_customer_report.sql. Campos añadidos en quote_items y order_items; las reglas y permisos existentes se conservan. Pruebas SQL verifican conversión, persistencia, ceros en numeración, validación, edición con revisión, conservación de importes y cierres, permisos y exclusión de información interna y trabajos pendientes. Se generaron y revisaron PDFs de una página, sin trabajos y de 24 notas con textos extensos.
+Se aplicó y probó la migración localmente: 230 pruebas SQL aprobadas, incluyendo 22 casos de ficha general y compatibilidad con el circuito anterior. Se verifican alta, copia, conversión, ceros, validación, revisión concurrente, permisos y conservación de cobros y cierres. Las pruebas PDF y de campos comunes verifican privacidad, ficha única y paginación; los documentos renderizados se revisaron visualmente. La vista de alta con dos ítems muestra una sola ficha a 390 y 1100 px, sin desbordamiento horizontal, con datos ficticios.
+
+El pase a producción se realiza mediante el workflow al mergear a main. No se publicó ni se modificó prod durante esta implementación.

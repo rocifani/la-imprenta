@@ -5,6 +5,7 @@ export function customerOrderDocument(order: Order, items: OrderItem[], money?: 
   const customer = order.customer_snapshot;
   return {
     kind: "order" as const,
+    workDescription: order.work_description??"",
     number: order.number,
     date: order.created_at,
     customer: {

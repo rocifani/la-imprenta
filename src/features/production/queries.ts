@@ -3,7 +3,7 @@ import {getTeamAccess} from "@/features/auth/team-access";
 import {createSupabaseServerClient} from "@/lib/supabase/server";
 import {validId} from "@/features/sales/queries";
 export type ProductionItem={id:string;description:string;client_description:string;technical_sheet:import("./technical-sheet").TechnicalSheet;specifications:string;quantity:number;production_status:"pending"|"completed";completion_note:string;completed_at:string|null};
-export type ProductionOrder={id:string;number:number;created_at:string;customer_name:string;notes:string;assigned_to:string|null;assignee_name:string|null;assignment_revision:number;handoffs:{id:number;from_name:string|null;to_name:string;actor_name:string;note:string;created_at:string}[];items:ProductionItem[]};
+export type ProductionOrder={id:string;number:number;created_at:string;customer_name:string;notes:string;work_description?:string;technical_sheet?:import("./technical-sheet").TechnicalSheet;assigned_to:string|null;assignee_name:string|null;assignment_revision:number;handoffs:{id:number;from_name:string|null;to_name:string;actor_name:string;note:string;created_at:string}[];items:ProductionItem[]};
 export type ProductionSummary={id:string;number:number;created_at:string;customer_name:string;assigned_to:string|null;assignee_name:string|null;item_count:number;completed_count:number};
 export async function requireOperator(){
  const access=await getTeamAccess();

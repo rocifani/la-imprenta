@@ -1,3 +1,4 @@
+import {drawPdfNoteBox} from "./pdf-note-box";
 import {wrap,createTextGuard} from "./pdf-text";
 export {PdfCharacterError} from "./pdf-text";
 import { PDFDocument, rgb, type PDFFont } from "pdf-lib";
@@ -44,19 +45,34 @@ export async function buildCommercialPdf(data: CustomerOrderDocument | CustomerQ
   }
   function line() { page.drawLine({ start: { x: margin, y }, end: { x: width - margin, y }, thickness: .7, color: rule }); }
   function productHeader() {
-    text("TRABAJO Y CARACTERÍSTICAS", margin, y, 8, bold, muted);
+    text(isQuote?"TRABAJO Y CARACTERÍSTICAS":"ÍTEM Y CARACTERÍSTICAS", margin, y, 8, bold, muted);
     right("CANTIDAD", 432, y, 8, bold);
     right("TOTAL DEL LOTE", width - margin, y, 8, bold);
     y -= 12; line(); y -= 20;
   }
   function header() {
     page.drawImage(logo, { x: margin, y: height - 79, width: 180, height: 180 * logo.height / logo.width });
-    right(title.toLocaleUpperCase("es-AR"), width - margin, height - 43, 11, bold);
-    right(number, width - margin, height - 63, 16, bold);
-    right(isQuote ? `${formatDate(data.date)} · Versión ${data.revision} · ${data.status === "approved" ? "Aprobado" : "Borrador"}` : formatDate(data.date), width - margin, height - 81, isQuote ? 8 : 9);
-    const segment = (width - margin * 2) / 3;
-    [rgb(0, .66, .84), rgb(.89, 0, .45), rgb(.94, .84, 0)].forEach((color, index) => page.drawRectangle({ x: margin + index * segment, y: height - 99, width: segment, height: 2, color }));
-    y = height - 125;
+    if(isQuote){
+      right(title.toLocaleUpperCase("es-AR"),width-margin,height-43,11,bold);
+      right(number,width-margin,height-63,16,bold);
+      right(`${formatDate(data.date)} · Versión ${data.revision} · ${data.status === "approved" ? "Aprobado" : "Borrador"}`,width-margin,height-81,8);
+      y=height-99;
+    }else{
+      text("NOTA DE PEDIDO",margin,height-104,9,bold);
+      text(number,margin,height-124,16,bold);
+      text(formatDate(data.date),margin,height-141,9);
+      let clientY=height-43;
+      const clientX=width-margin-250;
+      text("CLIENTE",clientX,clientY,8,bold,muted);clientY-=18;
+      const clientLine=(value:string,size:number,font:PDFFont)=>{for(const line of wrap(safeText(value),font,size,250)){text(line,clientX,clientY,size,font);clientY-=size*1.4;}clientY-=4;};
+      clientLine(data.customer.name,12,bold);
+      if(data.customer.contact)clientLine(data.customer.contact,10,regular);
+      for(const [label,value] of [["CUIT",data.customer.cuit?formatCuit(data.customer.cuit):""],["Teléfono",data.customer.phone],["Correo",data.customer.email],["Dirección",data.customer.address]])if(value)clientLine(label+": "+value,9,regular);
+      y=Math.min(height-157,clientY-8);
+    }
+    const segment=(width-margin*2)/3;
+    [rgb(0,.66,.84),rgb(.89,0,.45),rgb(.94,.84,0)].forEach((color,index)=>page.drawRectangle({x:margin+index*segment,y,width:segment,height:2,color}));
+    y-=26;
     if (inProducts) {
       productHeader();
       if (continuingProduct !== null) { text(`Trabajo ${continuingProduct} (continuación)`, margin, y, 9, bold, muted); y -= 20; }
@@ -78,15 +94,15 @@ export async function buildCommercialPdf(data: CustomerOrderDocument | CustomerQ
   }
 
   header();
-  paragraph("CLIENTE", { size: 8, bold: true, after: 7 });
-  paragraph(data.customer.name, { size: 15, bold: true, after: 10 });
-  if(data.customer.contact)paragraph(data.customer.contact,{size:11,after:9});
-  for (const [label, value] of [
-    ["CUIT", data.customer.cuit ? formatCuit(data.customer.cuit) : ""],
-    ["Teléfono", data.customer.phone],
-    ["Correo", data.customer.email], ["Dirección", data.customer.address],
-  ]) if (value) paragraph(`${label}: ${value}`, { size: 10, after: 3 });
-  y -= 18;
+  if(isQuote){
+    paragraph("CLIENTE",{size:8,bold:true,after:7});
+    paragraph(data.customer.name,{size:15,bold:true,after:10});
+    if(data.customer.contact)paragraph(data.customer.contact,{size:11,after:9});
+    for(const [label,value] of [["CUIT",data.customer.cuit?formatCuit(data.customer.cuit):""],["Teléfono",data.customer.phone],["Correo",data.customer.email],["Dirección",data.customer.address]])if(value)paragraph(label+": "+value,{size:10,after:3});
+    y-=18;
+  }else if(data.workDescription){
+    drawPdfNoteBox({value:data.workDescription,regular,bold,x:margin,width:width-margin*2,bottom,getPage:()=>page,getY:()=>y,setY:value=>{y=value},addPage:()=>{page=pdf.addPage([width,height]);header()}});
+  }
   function drawItems(rows:typeof data.items){
   // El encabezado de tabla se repite al continuar en otra página.
   ensure(95); inProducts = true; productHeader();
