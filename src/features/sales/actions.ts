@@ -160,7 +160,8 @@ export async function editOrder(_previous:FormState,form:FormData):Promise<FormS
  if(!validId(id)||!Number.isSafeInteger(revision)||revision<1)return {error:"Recargá la nota antes de guardar."};
  const parsed=readItems(form,true);if("error" in parsed)return parsed;
  const header=readOrderHeader(form);if("error" in header)return header;
- const db=await createSupabaseServerClient();const {error}=await db.rpc("edit_order",{p_order_id:id,p_revision:revision,p_items:parsed.items,p_description:header.description,p_technical_sheet:header.sheet,p_notes:String(form.get("order_notes")??"").trim()});
+ const depositData=readDeposit(form);if("error" in depositData)return depositData;
+ const db=await createSupabaseServerClient();const {error}=await db.rpc("edit_order",{p_order_id:id,p_revision:revision,p_items:parsed.items,p_description:header.description,p_technical_sheet:header.sheet,p_notes:String(form.get("order_notes")??"").trim(),p_deposit:depositData.deposit,p_change_deposit:true});
  if(error)return mutationError(error);
  refreshOrders();redirect("/panel/pedidos/"+id+"?saved=1");
 }

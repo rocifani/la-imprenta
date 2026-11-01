@@ -65,7 +65,7 @@ select is((select source_order_id from public.orders where id='00000000-0000-400
 select is((select count(*) from public.orders where id='00000000-0000-4000-8000-000000000929'),1::bigint,'Copia sigue existiendo');
 select is((select count(*) from public.customers where id='00000000-0000-4000-8000-000000000921'),1::bigint,'Cliente no se elimina');
 select throws_ok($$select public.delete_order('00000000-0000-4000-8000-000000000922',3,1)$$,'P0002',null,'Repetir borrado no afecta otras notas');
-select ok(not has_function_privilege('anon','public.edit_order(uuid,integer,jsonb,text,jsonb,text)','EXECUTE'),'Anónimo no edita');
+select ok(not has_function_privilege('anon','public.edit_order(uuid,integer,jsonb,text,jsonb,text,jsonb,boolean)','EXECUTE'),'Anónimo no edita');
 select ok(not has_function_privilege('anon','public.delete_order(uuid,integer,bigint)','EXECUTE'),'Anónimo no borra');
 select ok(not has_function_privilege('authenticated','private.lock_editable_order(uuid,integer)','EXECUTE'),'Helper inaccesible');
 select public.save_quote('00000000-0000-4000-8000-000000000970',null,'Cliente edición','','','[{"description":"Imanes","quantity":1,"amount":"50"}]','00000000-0000-4000-8000-000000000921');
