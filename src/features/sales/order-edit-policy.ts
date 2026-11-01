@@ -1,6 +1,11 @@
 import type {OrderItem} from "./types";
-export function orderEditBlock(items:Pick<OrderItem,"production_status">[],paid:number):string|null{
- if(paid>0)return "Esta nota tiene cobros registrados, incluida cualquier seña. No se puede editar ni eliminar.";
+type ItemStatus=Pick<OrderItem,"production_status">;
+export function orderEditBlock(items:ItemStatus[],paid:number,deposit=0):string|null{
+ if(paid>deposit)return "Esta nota tiene cobros adicionales a la seña. No se puede editar.";
  if(items.some(item=>item.production_status==="completed"))return "Esta nota tiene ítems terminados. No se puede editar ni eliminar.";
  return null;
+}
+export function orderDeleteBlock(items:ItemStatus[],paid:number):string|null{
+ if(paid>0)return "Esta nota tiene cobros registrados, incluida la seña. No se puede eliminar.";
+ return orderEditBlock(items,0);
 }

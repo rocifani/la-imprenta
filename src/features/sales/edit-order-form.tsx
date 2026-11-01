@@ -6,7 +6,7 @@ import {ProductsEditor,type EditableItem} from "./products-editor";
 import {OrderWorkFields} from "@/features/production/order-work-fields";
 import {formatMoney,moneyToCents} from "./money";
 import type {Order,OrderItem} from "./types";
-export function EditOrderForm({order,items}:{order:Order;items:OrderItem[]}){
+export function EditOrderForm({order,items,deposit=0}:{order:Order;items:OrderItem[];deposit?:number}){
  const [state,action,pending]=useActionState(editOrder,{});
  const [products,setProducts]=useState<EditableItem[]>(items.map(item=>({key:item.id,id:item.id,description:item.description,client_description:item.client_description,specifications:item.specifications,quantity:String(item.quantity),amount:String(item.amount)})));
  const cents=products.map(item=>moneyToCents(item.amount));
@@ -15,6 +15,6 @@ export function EditOrderForm({order,items}:{order:Order;items:OrderItem[]}){
  {state.error&&<p role="alert" className="form-alert">{state.error}</p>}
  <fieldset disabled={pending} className="form-fields"><section className="business-card"><h2>{order.customer_snapshot.display_name}</h2><p className="field-help">Se conserva el cliente de esta nota. Los cambios no modifican el presupuesto de origen.</p><OrderWorkFields description={order.work_description} sheet={order.technical_sheet}/></section>
  <ProductsEditor products={products} setProducts={setProducts} itemLabel="Ítem"/>
- <section className="business-card"><label>Observaciones internas del pedido<textarea name="order_notes" maxLength={2000} rows={3} defaultValue={order.notes}/></label><div className="quote-total"><span>Nuevo total acordado · ARS</span><strong>{total===null?"Completá los precios":formatMoney(total)}</strong></div><p className="field-help">El saldo y los PDFs reflejarán el nuevo total. Los ítems agregados quedan pendientes de producción.</p></section>
+ <section className="business-card"><label>Observaciones internas del pedido<textarea name="order_notes" maxLength={2000} rows={3} defaultValue={order.notes}/></label><div className="quote-total"><span>Nuevo total acordado · ARS</span><strong>{total===null?"Completá los precios":formatMoney(total)}</strong></div><p className="field-help">Seña recibida: {formatMoney(deposit)}. El nuevo total no puede ser menor que este importe.</p><p className="field-help">El saldo y los PDFs reflejarán el nuevo total. Los ítems agregados quedan pendientes de producción.</p></section>
  <div className="form-actions"><button className="button dark">{pending?"Guardando…":"Guardar cambios"}</button><Link className="button secondary" href={"/panel/pedidos/"+order.id}>Cancelar</Link></div></fieldset></form>;
 }

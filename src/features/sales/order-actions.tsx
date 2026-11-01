@@ -3,7 +3,7 @@ import Link from "next/link";
 import { DownloadPdf } from "./download-pdf";
 import { documentNumber } from "./money";
 
-export function OrderActions({ id, number, revision=1, blocked=null }: { id: string; number: number; revision?:number; blocked?:string|null }) {
+export function OrderActions({ id, number, revision=1, blocked=null, deleteBlocked=blocked }: { id: string; number: number; revision?:number; blocked?:string|null; deleteBlocked?:string|null }) {
   return <section className="order-actions" aria-label="Acciones de la nota de pedido">
     <div className="order-action-group">
       <h2>Gestionar nota</h2>
@@ -15,7 +15,8 @@ export function OrderActions({ id, number, revision=1, blocked=null }: { id: str
       <DownloadPdf variant="secondary" label="PDF para cliente ↓" href={`/panel/pedidos/${id}/pdf`} filename={`nota-pedido-${documentNumber("NP", number)}.pdf`} />
       <DownloadPdf variant="secondary" label="PDF para taller ↓" href={`/panel/pedidos/${id}/taller/pdf`} filename={`ficha-taller-${number}.pdf`} />
     </div>
-    {blocked?<p className="field-help order-edit-block" role="status">{blocked}</p>:<div className="order-delete-group"><p className="field-help">El borrado es definitivo y requiere confirmación.</p><DeleteOrderForm id={id} number={number} revision={revision}/></div>}
+    {blocked&&<p className="field-help order-edit-block" role="status">{blocked}</p>}
+    {deleteBlocked?(deleteBlocked!==blocked&&<p className="field-help order-edit-block" role="status">{deleteBlocked}</p>):<div className="order-delete-group"><p className="field-help">El borrado es definitivo y requiere confirmación.</p><DeleteOrderForm id={id} number={number} revision={revision}/></div>}
   </section>;
 }
 
