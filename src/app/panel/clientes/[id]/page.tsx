@@ -14,7 +14,7 @@ export default async function CustomerPage({ params, searchParams }: { params: P
   const options = await searchParams;
   const { page } = listParams(options);
   const db = await createSupabaseServerClient();
-  const { data: orders, count, error } = await db.from("orders").select("id,number,total,created_at", { count: "exact" }).eq("customer_id", customer.id).order("number", { ascending: false }).range((page - 1) * 20, page * 20 - 1);
+  const { data: orders, count, error } = await db.from("orders").select("id,number,total,created_at", { count: "exact" }).eq("customer_id", customer.id).order("number", { ascending: true }).range((page - 1) * 20, page * 20 - 1);
   if (error) throw new Error("No pudimos cargar el historial.");
   const {data:money,error:moneyError}=await db.rpc("customer_money",{p_customer_id:customer.id});
   if(moneyError) throw new Error("No pudimos cargar el saldo del cliente.");

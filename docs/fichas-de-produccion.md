@@ -24,7 +24,7 @@ Los RPC de alta, conversión y edición aceptan los campos comunes y mantienen d
 
 ## Resumen descargable del cliente
 
-Desde la ficha del cliente se puede ver y descargar un resumen de **trabajos terminados**. La función SQL excluye trabajos sin terminar y selecciona únicamente datos comerciales. Incluye notas con al menos un trabajo terminado, incluso si ya están pagadas. Cada nota muestra los trabajos terminados, su importe conjunto y, por separado, total acordado, cobrado y saldo de la nota completa. Los cobros se aplican por nota: no se asigna deuda a un trabajo arbitrariamente. El saldo general del PDF es la suma de las notas incluidas, no el saldo de notas que no tienen trabajos terminados.
+Desde la ficha del cliente se puede ver y descargar un resumen de **trabajos terminados**. La función SQL excluye trabajos sin terminar y selecciona únicamente datos comerciales. Incluye notas con al menos un trabajo terminado y saldo distinto de cero; las notas totalmente pagadas quedan fuera del resumen. Cada nota muestra los trabajos terminados, su importe conjunto y, por separado, total acordado, cobrado y saldo de la nota completa. Los cobros se aplican por nota: no se asigna deuda a un trabajo arbitrariamente. El saldo general del PDF es la suma de las notas incluidas, no el saldo de notas que no tienen trabajos terminados.
 
 El resumen se obtiene completo, sin depender de las 20 filas del historial paginado. Se genera con una sola lectura consistente. En la ficha permanece el resumen operativo de trabajos pendientes y saldos, diferenciado del documento del cliente. La nota de pedido individual sigue describiendo todos los trabajos acordados; la selección de solo terminados corresponde al resumen por cliente solicitado.
 
@@ -53,3 +53,7 @@ Se permite editar una nota con solo seña mientras no tenga ítems terminados. U
 ## Corrección de seña (migración 022)
 
 El editor de nota permite corregir importe, fecha y medio de pago de la seña, precargando el movimiento real. Dejar el importe vacío quita una seña ingresada por error; también permite agregar una seña omitida. Se mantienen los bloqueos por otros cobros o ítems terminados. La corrección y la edición de ítems se confirman juntas, bajo bloqueo de fila y revisión: actualizan un único movimiento y recalculan el saldo. El importe no puede superar el nuevo total. Una validación fallida revierte todos los cambios, incluida la seña. Las llamadas anteriores que omiten p_change_deposit conservan la seña. Las fechas y medios existentes no se reemplazan por valores por defecto al editar.
+
+## Resumen de saldos abiertos (migración 023)
+
+El resumen para el cliente, en web y PDF, excluye notas totalmente saldadas y conserva solo sus ítems terminados. Mantiene las señas y pagos descontados del saldo de la nota completa; si existe saldo negativo, lo identifica como saldo a favor. No agrega un mecanismo nuevo de crédito ni traslada pagos entre notas. Ordena las notas por número ascendente. El historial interno conserva las notas pagadas, y tanto ese historial como el resumen operativo se ordenan también de menor a mayor. Un resumen sin deuda ni crédito informa que no hay notas para incluir.

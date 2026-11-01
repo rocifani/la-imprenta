@@ -10,3 +10,10 @@ test("La proyección no incluye claves ni datos internos agregados por accidente
 test("Genera resumen corto y diferencia importe terminado del saldo de nota",async()=>{const document=completedSummaryDocument(base);assert.equal(document.orders[0].completed_total,48000);assert.equal(document.orders[0].balance,60000);const bytes=await buildCompletedSummaryPdf(document,await loadPdfAssets());assert.equal((await PDFDocument.load(bytes)).getPageCount(),1);await mkdir("tmp/pdfs",{recursive:true});await writeFile("tmp/pdfs/resumen-cliente-terminados.pdf",bytes);});
 test("Incluye más de veinte notas y conserva textos largos en varias páginas",async()=>{const source={...base,balance:base.balance*24,orders:Array.from({length:24},(_,index)=>({...base.orders[0],id:String(index),number:index+1,items:[{description: `Trabajo terminado ${index+1}. `+"Descripción comercial extensa para el cliente. ".repeat(15),quantity:100,amount:48000}]}))};const bytes=await buildCompletedSummaryPdf(completedSummaryDocument(source),await loadPdfAssets());assert.ok((await PDFDocument.load(bytes)).getPageCount()>3);await writeFile("tmp/pdfs/resumen-cliente-multipagina.pdf",bytes);});
 test("Permite descargar un resumen sin trabajos terminados",async()=>{const source={...base,balance:0,orders:[]};const bytes=await buildCompletedSummaryPdf(completedSummaryDocument(source),await loadPdfAssets());assert.equal((await PDFDocument.load(bytes)).getPageCount(),1);await writeFile("tmp/pdfs/resumen-cliente-vacio.pdf",bytes);});
+
+test("Omite notas saldadas, conserva saldos a favor y ordena por número ascendente",()=>{
+ const source={...base,balance:9999,orders:[{...base.orders[0],number:9,balance:50},{...base.orders[0],number:2,balance:0},{...base.orders[0],number:3,balance:-20},{...base.orders[0],number:1,balance:100}]};
+ const document=completedSummaryDocument(source);
+ assert.deepEqual(document.orders.map(order=>order.number),[1,3,9]);assert.equal(document.balance,130);
+ assert.deepEqual(source.orders.map(order=>order.number),[9,2,3,1]);
+});
