@@ -76,3 +76,10 @@ export async function getQuoteAlternatives(versionId:string,items:QuoteItem[]){
  if(error)throw new Error("No pudimos cargar las alternativas.");
  return (data??[]).map(option=>({...option,items:items.filter(item=>item.alternative_id===option.id)})) as import("./types").QuoteAlternative[];
 }
+
+export async function getOrderDeposit(id:string){
+ await requireDesigner();if(!validId(id))notFound();
+ const db=await createSupabaseServerClient();const {data,error}=await db.rpc("order_deposit",{p_order_id:id});
+ if(error)throw new Error("No pudimos cargar la seña de la nota.");
+ return data as import("@/features/finance/payment-fields").DepositDetails|null;
+}

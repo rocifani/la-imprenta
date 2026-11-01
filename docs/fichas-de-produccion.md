@@ -49,3 +49,7 @@ Verificación: 276 pruebas SQL, incluyendo 46 casos de edición/borrado y bloque
 ## Ajuste de señas (migración 021, 1/11/2026)
 
 Se permite editar una nota con solo seña mientras no tenga ítems terminados. Un movimiento de tipo payment bloquea la edición, aunque sea parcial o mínimo; el tipo deposit no la bloquea. El nuevo total debe ser mayor o igual que la seña y la operación se revierte completa si no cumple, conservando ítems, total y revisión. El editor de ficha también permite señas. El borrado físico sigue bloqueado por cualquier ingreso, incluida seña. Interfaz y SQL distinguen las restricciones de editar y borrar.
+
+## Corrección de seña (migración 022)
+
+El editor de nota permite corregir importe, fecha y medio de pago de la seña, precargando el movimiento real. Dejar el importe vacío quita una seña ingresada por error; también permite agregar una seña omitida. Se mantienen los bloqueos por otros cobros o ítems terminados. La corrección y la edición de ítems se confirman juntas, bajo bloqueo de fila y revisión: actualizan un único movimiento y recalculan el saldo. El importe no puede superar el nuevo total. Una validación fallida revierte todos los cambios, incluida la seña. Las llamadas anteriores que omiten p_change_deposit conservan la seña. Las fechas y medios existentes no se reemplazan por valores por defecto al editar.
