@@ -21,7 +21,7 @@ export async function buildCompletedSummaryPdf(data:CompletedSummaryDocument,ass
  header();paragraph(data.customer.name,{size:16,bold:true});
  for(const [label,value] of [["CUIT",data.customer.cuit?formatCuit(data.customer.cuit):""],["Teléfono",data.customer.phone],["Correo",data.customer.email],["Dirección",data.customer.address]])if(value)paragraph(label+": "+value,{size:9,after:3});
  y-=14;paragraph("TRABAJOS TERMINADOS",{size:11,bold:true});
- if(!data.orders.length)paragraph("No hay trabajos terminados registrados para este cliente.");
+ if(!data.orders.length)paragraph("No hay notas con trabajos terminados y saldo pendiente o a favor.");
  for(const order of data.orders){
   ensure(110);ruleLine();paragraph(documentNumber("NP",order.number)+" · "+formatDate(order.created_at),{size:12,bold:true});
   for(const item of order.items){
@@ -31,11 +31,11 @@ export async function buildCompletedSummaryPdf(data:CompletedSummaryDocument,ass
   }
   ensure(110);paragraph("Importe de los trabajos terminados: "+formatMoney(order.completed_total),{size:9});
   paragraph("Total de la nota completa: "+formatMoney(order.total),{size:9});
-  paragraph("Cobrado en la nota (incluye señas): "+formatMoney(order.paid),{size:9});
-  paragraph("Saldo de la nota completa: "+formatMoney(order.balance),{size:11,bold:true,after:14});
+  paragraph("Pagos y señas aplicados a la nota: "+formatMoney(order.paid),{size:9});
+  paragraph((order.balance<0?"Saldo a favor en la nota: ":"Resta pagar de la nota: ")+formatMoney(Math.abs(order.balance)),{size:11,bold:true,after:14});
  }
- ensure(100);ruleLine();paragraph("Saldo de las notas incluidas: "+formatMoney(data.balance),{size:13,bold:true});
- paragraph("Los cobros se aplican a notas completas. Este documento muestra solo los trabajos terminados; los importes y saldos de cada nota corresponden a la nota completa.",{size:8});
+ ensure(100);ruleLine();paragraph((data.balance<0?"Saldo a favor de las notas incluidas: ":"Saldo pendiente de las notas incluidas: ")+formatMoney(Math.abs(data.balance)),{size:13,bold:true});
+ paragraph("Los cobros se aplican a notas completas. Se excluyen las notas totalmente pagadas. Este documento muestra solo los trabajos terminados; los importes y saldos de cada nota corresponden a la nota completa.",{size:8});
  paragraph("Resumen según los trabajos y cobros registrados al emitir este documento.",{size:8});
  const pages=pdf.getPages();pages.forEach((page,index)=>{page.drawLine({start:{x:margin,y:47},end:{x:width-margin,y:47},thickness:.5,color:rule});page.drawText("La Imprenta · Resumen del cliente",{x:margin,y:31,size:8,font:regular,color:muted});const label=`${index+1} / ${pages.length}`;page.drawText(label,{x:width-margin-regular.widthOfTextAtSize(label,8),y:31,size:8,font:regular,color:muted});});
  return pdf.save();
