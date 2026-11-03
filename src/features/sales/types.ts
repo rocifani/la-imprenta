@@ -13,7 +13,7 @@ export type Order = {
   id: string; number: number; quote_id: string | null; quote_version_id: string | null; customer_id: string;
   customer_snapshot: Omit<Customer, "version" | "cuit"> & { cuit?: string }; total: string | number; notes: string; invoiced: boolean; created_at: string; work_description?:string; technical_sheet?:import("@/features/production/technical-sheet").TechnicalSheet; production_revision?: number; assigned_to?:string|null; assignment_revision?:number;source_order_id?:string|null;
 };
-export type OrderItem = QuoteItem & { id: string; position: number; production_status: "pending" | "completed"; completion_note?: string; completed_at?: string | null };
+export type OrderItem = QuoteItem & { with_vat?: boolean; vat_amount?: number | string; id: string; position: number; production_status: "pending" | "completed"; completion_note?: string; completed_at?: string | null };
 export type FormState = { error?: string };
 
 export type QuoteAlternative={id:string;name:string;position:number;items:QuoteItem[]};
