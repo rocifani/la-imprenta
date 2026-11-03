@@ -1,3 +1,4 @@
+import { PendingLink } from "@/components/pending-link";
 import {DeleteOrderForm} from "./delete-order-form";
 import Link from "next/link";
 import { DownloadPdf } from "./download-pdf";
@@ -22,7 +23,7 @@ export function OrderActions({ id, number, revision=1, blocked=null, deleteBlock
 
 export function OrderRowActions({ id, number }: { id: string; number: number }) {
   return <div className="order-row-actions" aria-label={`Acciones de ${documentNumber("NP", number)}`}>
-    <Link className="button secondary" href={`/panel/pedidos/${id}`}>Ver nota ↗</Link>
+    <PendingLink className="button secondary" href={`/panel/pedidos/${id}`} pendingLabel="Abriendo nota…">Ver nota ↗</PendingLink>
     <Link className="button secondary" href={`/panel/pedidos/nuevo?duplicate_from=${id}`}>Duplicar</Link>
   </div>;
 }
