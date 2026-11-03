@@ -113,3 +113,5 @@
 .pagination button { background: transparent; color: inherit; border: 1px solid #d7d8cf; border-radius: .4rem; }
 .pagination button:disabled { opacity: .45; }
 .pagination-link .loading-indicator { margin-inline-start: .5rem; }
+
+.edit-member .loading-indicator, .button .loading-indicator { margin-inline-start: .5rem; }

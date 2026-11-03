@@ -1,4 +1,4 @@
-import { PaginationLink } from "@/components/pagination-link";
+import { PendingLink } from "@/components/pending-link";
 
 export function Pagination({ base, page, count, search = "", status = "", filters = {} }: {
   base: string;
@@ -21,14 +21,14 @@ export function Pagination({ base, page, count, search = "", status = "", filter
 
   if (page > pages) {
     return <nav className="pagination" aria-label="Páginas de resultados">
-      <PaginationLink href={href(pages)}>Volver a los resultados</PaginationLink>
+      <PendingLink className="pagination-link" href={href(pages)}>Volver a los resultados</PendingLink>
     </nav>;
   }
 
   return <nav className="pagination" aria-label="Páginas de resultados">
-    {page > 1 && <PaginationLink href={href(page - 1)}>← Anterior</PaginationLink>}
+    {page > 1 && <PendingLink className="pagination-link" href={href(page - 1)}>← Anterior</PendingLink>}
     <span>Página {page} de {pages}</span>
-    {page < pages && <PaginationLink href={href(page + 1)}>Siguiente →</PaginationLink>}
+    {page < pages && <PendingLink className="pagination-link" href={href(page + 1)}>Siguiente →</PendingLink>}
   </nav>;
 }
 
