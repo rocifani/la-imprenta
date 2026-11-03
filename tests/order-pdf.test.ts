@@ -82,3 +82,15 @@ test("Genera PDF de presupuestos aprobados y versiones anteriores como borrador"
 test("El PDF comercial recibe descripción general sin la ficha técnica común",async()=>{const data=customerOrderDocument({...order,work_description:"Imanes de animales: delfines y tortugas",technical_sheet:{observations:"TECNICA GENERAL PRIVADA"}},items);assert.equal(data.workDescription,"Imanes de animales: delfines y tortugas");assert.ok(!JSON.stringify(data).includes("TECNICA GENERAL PRIVADA"));await writeFile("tmp/pdfs/nota-cliente-general.pdf",await buildCommercialPdf(data,await loadPdfAssets()));});
 
 test("La nota general extensa continúa en páginas nuevas sin perder su final",async()=>{const data=customerOrderDocument({...order,work_description:("Descripción general del trabajo y sus modelos.\n".repeat(40))+"FIN_NOTA_GENERAL"},items);const bytes=await buildCommercialPdf(data,await loadPdfAssets());assert.ok((await PDFDocument.load(bytes)).getPageCount()>1);await writeFile("tmp/pdfs/nota-general-extensa.pdf",bytes);});
+
+test("Genera una nota mixta con base, IVA por línea y total", async () => {
+  const document = customerOrderDocument({ ...order, total: 171.61 }, [
+    { ...items[0], amount: 121.61, with_vat: true, vat_amount: 21.11 },
+    { ...items[0], id: "second", position: 2, client_description: "Tarjetas sin IVA", amount: 50 },
+  ]);
+  assert.deepEqual(document.items.map(item => [item.base, item.vat, item.amount]), [[100.50, 21.11, 121.61], [50, 0, 50]]);
+  const pdf = await buildCommercialPdf(document, await loadPdfAssets());
+  assert.equal((await PDFDocument.load(pdf)).getPageCount(), 1);
+  await mkdir("tmp/pdfs", { recursive: true });
+  await writeFile("tmp/pdfs/nota-iva-mixto.pdf", pdf);
+});

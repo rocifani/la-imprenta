@@ -103,7 +103,7 @@ export async function buildCommercialPdf(data: CustomerOrderDocument | CustomerQ
   }else if(data.workDescription){
     drawPdfNoteBox({value:data.workDescription,regular,bold,x:margin,width:width-margin*2,bottom,getPage:()=>page,getY:()=>y,setY:value=>{y=value},addPage:()=>{page=pdf.addPage([width,height]);header()}});
   }
-  function drawItems(rows:typeof data.items){
+  function drawItems(rows: (CustomerOrderDocument["items"][number] | CustomerQuoteDocument["items"][number])[]){
   // El encabezado de tabla se repite al continuar en otra página.
   ensure(95); inProducts = true; productHeader();
   for (const [index, item] of rows.entries()) {
@@ -114,6 +114,9 @@ export async function buildCommercialPdf(data: CustomerOrderDocument | CustomerQ
     right(formatMoney(item.amount), width - margin, y, 10, bold);
     for (const title of titleLines) { ensure(17); text(title, margin, y, 11, bold); y -= 17; }
     if (item.specifications) paragraph(item.specifications, { maxWidth: 316, size: 9, after: 5 });
+    if ("withVat" in item && item.withVat) {
+      paragraph("Precio sin IVA: " + formatMoney(item.base) + " · IVA 21 %: " + formatMoney(item.vat) + " · Total: " + formatMoney(item.amount), { size: 9 });
+    }
     continuingProduct = null;
     y -= 9;
     if (y >= bottom + 15) { line(); y -= 22; }
@@ -125,7 +128,12 @@ export async function buildCommercialPdf(data: CustomerOrderDocument | CustomerQ
   }else drawItems(data.items);
   inProducts = false;
   if(!isQuote||data.alternatives.length<=1){
-  ensure(85);
+  const showVat = !isQuote && data.items.some(item => item.withVat);
+  ensure(showVat ? 110 : 85);
+  if (!isQuote && showVat) {
+    const vat = data.items.reduce((sum, item) => sum + Math.round(item.vat * 100), 0) / 100;
+    paragraph("Subtotal sin IVA: " + formatMoney(Number(data.total) - vat) + " · IVA total: " + formatMoney(vat), { size: 10 });
+  }
   y -= 10;
   text(isQuote ? "TOTAL PRESUPUESTADO · ARS" : "TOTAL ACORDADO · ARS", margin, y, 10, bold);
   right(formatMoney(data.total), width - margin, y - 2, 18, bold);

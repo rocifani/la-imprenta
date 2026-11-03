@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(27);
+select plan(32);
 delete from public.team_members;
 insert into auth.users(id,email) values
  ('00000000-0000-4000-8000-000000000401','billing.designer@example.test'),
@@ -15,11 +15,17 @@ insert into public.team_member_roles(member_id,role) values
  ('00000000-0000-4000-8000-000000000412','billing'),('00000000-0000-4000-8000-000000000413','billing');
 set local role authenticated;
 set local "request.jwt.claim.sub"='00000000-0000-4000-8000-000000000401';
-select public.create_direct_order('00000000-0000-4000-8000-000000000421',null,'{"display_name":"Cliente fiscal","cuit":"20123456789","notes":"SECRETO CLIENTE"}','00000000-0000-4000-8000-000000000422','SECRETO PEDIDO','[{"description":"Folletos","quantity":500,"amount":"123.45"}]');
-select public.create_direct_order('00000000-0000-4000-8000-000000000423','00000000-0000-4000-8000-000000000422',null,null,'','[{"description":"Tarjetas","quantity":100,"amount":"200"}]');
+select public.create_direct_order('00000000-0000-4000-8000-000000000421',null,'{"display_name":"Cliente fiscal","cuit":"20123456789","notes":"SECRETO CLIENTE"}','00000000-0000-4000-8000-000000000422','SECRETO PEDIDO','[{"description":"Folletos","quantity":500,"amount":"123.45","with_vat":true},{"description":"Trabajo sin IVA","quantity":1,"amount":"50"}]');
+select public.create_direct_order('00000000-0000-4000-8000-000000000423','00000000-0000-4000-8000-000000000422',null,null,'','[{"description":"Tarjetas","quantity":100,"amount":"200","with_vat":true}]');
+select public.create_direct_order('00000000-0000-4000-8000-000000000424','00000000-0000-4000-8000-000000000422',null,null,'','[{"description":"Sin IVA","quantity":1,"amount":"10"}]');
+select is((select total from public.orders where id='00000000-0000-4000-8000-000000000421'),199.37::numeric,'El total incluye ambos ítems e IVA');
 select throws_ok($$select public.billing_customers()$$,'42501',null,'El selector de facturación requiere su rol');
 select throws_ok($$select public.mark_order_invoiced('00000000-0000-4000-8000-000000000421')$$,'42501',null,'Diseño y Producción no pueden marcar facturación');
 set local "request.jwt.claim.sub"='00000000-0000-4000-8000-000000000402';
+select is(public.billing_order('00000000-0000-4000-8000-000000000424'),null::jsonb,'Una nota sin IVA no tiene detalle de facturación');
+select throws_ok($$select public.mark_order_invoiced('00000000-0000-4000-8000-000000000424')$$,'23514',null,'No permite facturar una nota sin IVA');
+select is(jsonb_array_length(public.billing_order('00000000-0000-4000-8000-000000000421')->'items'),1,'Omite ítems sin IVA de una nota mixta');
+select ok(not(public.billing_queue()->'orders' @> '[{"id":"00000000-0000-4000-8000-000000000424"}]'::jsonb),'Una nota sin IVA no entra en la cola');
 select is(public.billing_order('00000000-0000-4000-8000-000000000421')->'customer'->>'cuit','20123456789','Facturación recibe el CUIT histórico');
 select ok(position('SECRETO' in public.billing_order('00000000-0000-4000-8000-000000000421')::text)=0,'Facturación no recibe notas internas');
 select is((select count(*) from public.customers),0::bigint,'No habilita acceso general a fichas de clientes');
@@ -41,7 +47,7 @@ select lives_ok($$select public.mark_order_invoiced('00000000-0000-4000-8000-000
 select is((public.billing_order('00000000-0000-4000-8000-000000000421')->>'invoiced')::boolean,true,'La nota queda facturada');
 select ok(not(public.billing_queue('pending',0)->'orders' @> '[{"id":"00000000-0000-4000-8000-000000000421"}]'::jsonb),'Sale de pendientes al facturar');
 select ok(public.billing_queue('invoiced',0)->'orders' @> '[{"id":"00000000-0000-4000-8000-000000000421"}]'::jsonb,'Aparece entre las facturadas');
-select is((public.billing_order('00000000-0000-4000-8000-000000000421')->>'total')::numeric,123.45::numeric,'La facturación conserva el importe acordado');
+select is((public.billing_order('00000000-0000-4000-8000-000000000421')->>'total')::numeric,149.37::numeric,'Solo factura la línea con IVA redondeado');
 select is((select count(*) from public.orders),0::bigint,'No concede acceso comercial directo');
 select ok(not has_function_privilege('anon','public.mark_order_invoiced(uuid)','EXECUTE'),'El público no puede registrar facturación');
 select is(public.billing_order('00000000-0000-4000-8000-000000000421')->>'invoiced_by_name','Facturador A','Conserva autor del registro');

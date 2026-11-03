@@ -1,3 +1,4 @@
+import { orderItemBase } from "./vat";
 import type { Order, OrderItem } from "./types";
 
 // Proyección explícita: nunca pasar al PDF la ficha completa ni notas internas.
@@ -12,7 +13,7 @@ export function customerOrderDocument(order: Order, items: OrderItem[], money?: 
       name: customer.display_name, contact: customer.contact_name, phone: customer.phone,
       email: customer.email, address: customer.address, cuit: customer.cuit,
     },
-    items: items.map(({ description, client_description, quantity, amount }) => ({ description:client_description?.trim()||description, specifications:"", quantity, amount })),
+    items: items.map(item => ({ description:item.client_description?.trim()||item.description, specifications:"", quantity:item.quantity, amount:item.amount, withVat:item.with_vat===true, base:orderItemBase(item), vat:Number(item.vat_amount??0) })),
     total: order.total,
     deposit: money?.deposit ?? 0, paid: money?.paid ?? 0, balance: money?.balance ?? Number(order.total),
   };

@@ -37,7 +37,7 @@ export async function saveCustomer(_previous: FormState, form: FormData): Promis
   redirect(`/panel/clientes/${id}?saved=1`);
 }
 
-function readItems(form: FormData, preserveIds=false) {
+function readItems(form: FormData, preserveIds=false, orderItems=false) {
   let source: unknown;
   try { source = JSON.parse(String(form.get("items") ?? "[]")); } catch { return { error: "Revisá los trabajos." }; }
   if (!Array.isArray(source) || source.length < 1 || source.length > 50) return { error: "Agregá entre 1 y 50 trabajos." };
@@ -52,7 +52,7 @@ function readItems(form: FormData, preserveIds=false) {
     const sheet=item.technical_sheet??{};
     if(clientDescription.length<2||clientDescription.length>1000||!validTechnicalSheet(sheet))return {error:"Revisá la descripción para el cliente y la ficha técnica del trabajo."};
     if(preserveIds&&item.id!=null&&!validId(String(item.id)))return {error:"Recargá la nota antes de guardar los ítems."};
-    items.push({ ...(preserveIds?{id:item.id??null}:{}),client_description:clientDescription,technical_sheet:sheet,description: String(item.description ?? "").trim(), specifications: String(item.specifications ?? "").trim(), quantity: Number(item.quantity), amount: (cents / 100).toFixed(2) });
+    items.push({ ...(orderItems?{with_vat:item.with_vat===true}:{}),...(preserveIds?{id:item.id??null}:{}),client_description:clientDescription,technical_sheet:sheet,description: String(item.description ?? "").trim(), specifications: String(item.specifications ?? "").trim(), quantity: Number(item.quantity), amount: (cents / 100).toFixed(2) });
   }
   return {items};
 }
@@ -121,8 +121,14 @@ export async function createOrder(_previous: FormState, form: FormData): Promise
  const header=readOrderHeader(form);if("error" in header)return header;
  const depositData=readDeposit(form); if("error" in depositData) return depositData;
   const db = await createSupabaseServerClient();
+  let vatItems: boolean[] | null = null;
+  const vatSelection = form.get("vat_items");
+  if (typeof vatSelection === "string") {
+    if (!/^[01]{1,50}$/.test(vatSelection)) return { error: "Revisá el IVA de los trabajos aprobados." };
+    vatItems = Array.from(vatSelection, value => value === "1");
+  }
   const { data, error } = await db.rpc("create_order_from_quote", {
-    p_quote_id: id, p_version: version, p_customer_id: customerId || null,
+    p_vat_items: vatItems, p_quote_id: id, p_version: version, p_customer_id: customerId || null,
     p_new_customer: customerId ? null : customerData(form), p_new_customer_id: newCustomerId, p_deposit:depositData.deposit,p_assignee_id:assigneeId||null,p_description:header.description,p_technical_sheet:header.sheet,
   });
   if (error) return mutationError(error);
@@ -139,7 +145,7 @@ export async function createDirectOrder(_previous:FormState, form:FormData):Prom
  const newCustomerId=String(form.get("new_customer_id")??"");
  if (!validId(id) || !validId(newCustomerId) || (customerId && !validId(customerId))) return {error:"Recargá el formulario antes de crear la nota."};
  if(form.get("confirmed")!=="on") return {error:"Confirmá que el trabajo fue acordado con el cliente."};
- const parsed=readItems(form); if("error" in parsed) return parsed;
+ const parsed=readItems(form,false,true); if("error" in parsed) return parsed;
  const sourceId=String(form.get("source_order_id")??"");if(sourceId&&!validId(sourceId))return {error:"La nota de origen no es válida."};
  const assigneeId=String(form.get("assignee_id")??"");if(assigneeId&&!validId(assigneeId))return {error:"Elegí un responsable válido."};
  const header=readOrderHeader(form);if("error" in header)return header;
@@ -158,7 +164,7 @@ export async function editOrder(_previous:FormState,form:FormData):Promise<FormS
  await requireDesigner();
  const id=String(form.get("order_id")??""),revision=Number(form.get("revision"));
  if(!validId(id)||!Number.isSafeInteger(revision)||revision<1)return {error:"Recargá la nota antes de guardar."};
- const parsed=readItems(form,true);if("error" in parsed)return parsed;
+ const parsed=readItems(form,true,true);if("error" in parsed)return parsed;
  const header=readOrderHeader(form);if("error" in header)return header;
  const depositData=readDeposit(form);if("error" in depositData)return depositData;
  const db=await createSupabaseServerClient();const {error}=await db.rpc("edit_order",{p_order_id:id,p_revision:revision,p_items:parsed.items,p_description:header.description,p_technical_sheet:header.sheet,p_notes:String(form.get("order_notes")??"").trim(),p_deposit:depositData.deposit,p_change_deposit:true});
