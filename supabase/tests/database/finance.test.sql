@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(26);
+select plan(28);
 delete from public.team_members;
 insert into auth.users(id,email) values('00000000-0000-4000-8000-000000000501','money.designer@example.test'),('00000000-0000-4000-8000-000000000502','money.finance@example.test');
 insert into public.team_members(id,auth_user_id,email,display_name) values
@@ -37,9 +37,11 @@ reset role;
 update public.orders set created_at=now()-interval '15 days' where id='00000000-0000-4000-8000-000000000521';
 set local role authenticated;
 select is((public.order_money('00000000-0000-4000-8000-000000000521')->>'overdue')::boolean,true,'Avisa al cumplir 15 días desde el alta');
+select is((public.finance_orders('overdue',20,'00000000-0000-4000-8000-000000000521')->>'pending_balance')::numeric,30::numeric,'El saldo pendiente abarca todas las páginas y descuenta cobros y señas');
 select public.record_payment('00000000-0000-4000-8000-000000000534','00000000-0000-4000-8000-000000000521',30,'1901-01-15','cash','Saldo');
 select is((public.order_money('00000000-0000-4000-8000-000000000521')->>'overdue')::boolean,false,'Pagar el saldo elimina el aviso');
 select is((public.customer_money('00000000-0000-4000-8000-000000000522')->>'balance')::numeric,0::numeric,'La ficha del cliente suma los cobros sin duplicar señas');
+select is((public.finance_orders('overdue',20,'00000000-0000-4000-8000-000000000521')->>'pending_balance')::numeric,0::numeric,'El pago total elimina la nota del saldo pendiente');
 select ok(not has_function_privilege('authenticated','private.record_income(uuid,uuid,numeric,date,text,text,text)','EXECUTE'),'No se puede omitir el control de los RPC públicos');
 select ok(not has_function_privilege('anon','public.record_payment(uuid,uuid,numeric,date,text,text)','EXECUTE'),'El público no puede registrar dinero');
 select throws_ok($$select * from public.money_movements$$,'42501',null,'No hay acceso directo a los movimientos');
