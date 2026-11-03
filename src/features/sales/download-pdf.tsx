@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/loading-indicator";
 import { useState } from "react";
 
 export function DownloadPdf({ href, filename, label="Descargar PDF para cliente ↓", variant="dark" }: { href: string; filename: string; label?:string; variant?:"dark"|"secondary" }) {
@@ -21,5 +22,5 @@ export function DownloadPdf({ href, filename, label="Descargar PDF para cliente 
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No pudimos descargar el PDF."); }
     finally { setPending(false); }
   }
-  return <div className="pdf-download"><button type="button" disabled={pending} className={`button ${variant}`} onClick={download}>{pending ? "Generando PDF…" : label}</button>{error && <p className="field-error" role="alert">{error}</p>}</div>;
+  return <div className="pdf-download"><button type="button" disabled={pending} className={`button ${variant}`} onClick={download}>{pending ? <LoadingIndicator label="Generando PDF…" /> : label}</button>{error && <p className="field-error" role="alert">{error}</p>}</div>;
 }

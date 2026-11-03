@@ -1,3 +1,5 @@
+import { PagedSection } from "@/components/paged-section";
+import { splitPages } from "@/features/sales/list-controls";
 import Link from "next/link";
 import {getFinanceOrder} from "@/features/finance/queries";
 import {MovementForm} from "@/features/finance/movement-form";
@@ -10,5 +12,5 @@ export default async function FinanceOrderPage({params,searchParams}:{params:Pro
  {saved==="1"&&<p role="status" className="success-note">Cobro registrado.</p>}{order.overdue&&<p role="status" className="form-alert">Hay saldo pendiente y pasaron 15 días o más desde la creación de la nota.</p>}
  <section className="business-card"><dl className="data-grid"><div><dt>Total acordado</dt><dd>{formatMoney(order.total)}</dd></div><div><dt>Cobrado, incluidas señas</dt><dd>{formatMoney(order.paid)}</dd></div><div><dt>Saldo pendiente</dt><dd>{formatMoney(order.balance)}</dd></div></dl></section>
  {order.balance>0&&<section className="business-card"><h2>Registrar cobro</h2><p className="field-help">Registrá un pago parcial o el saldo completo, hasta {formatMoney(order.balance)}.</p><MovementForm id={crypto.randomUUID()} orderId={order.id}/></section>}
- <section className="business-card"><h2>Historial de cobros</h2>{receipts.length?<MovementsTable movements={receipts}/>:<p>Todavía no hay cobros registrados.</p>}</section></main>;
+ <section className="business-card"><h2>Historial de cobros</h2>{receipts.length?<PagedSection label="Historial de cobros" pages={splitPages(receipts).map((movements,index)=><MovementsTable key={index} movements={movements}/>)}/>:<p>Todavía no hay cobros registrados.</p>}</section></main>;
 }
