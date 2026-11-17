@@ -115,3 +115,5 @@
 .pagination-link .loading-indicator { margin-inline-start: .5rem; }
 
 .edit-member .loading-indicator, .button .loading-indicator { margin-inline-start: .5rem; }
+
+.statement-table{min-width:760px}.statement-table td:nth-child(2){min-width:230px;max-width:430px;overflow-wrap:anywhere;white-space:pre-wrap}.statement-table th:nth-child(n+3),.statement-table td:nth-child(n+3){text-align:right}.statement-table td{vertical-align:top;padding:16px}
