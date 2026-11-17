@@ -10,3 +10,23 @@ export async function getFinanceOrder(id:string){
  if(error||receiptError)throw new Error("No pudimos cargar los cobros.");
  if(!data.orders.length)notFound();return {order:data.orders[0] as FinanceOrder,receipts:receipts as Movement[]};
 }
+
+export async function getFinanceCustomerAccount(id: string) {
+  await requireFinance();
+  if (!validId(id)) notFound();
+  const db = await createSupabaseServerClient();
+  const { data, error } = await db.rpc("finance_customer_account", { p_customer_id: id });
+  if (error) throw new Error("No pudimos cargar los saldos del cliente.");
+  if (!data) notFound();
+  return data as import("./customer-payment-types").CustomerAccount;
+}
+
+export async function getCustomerPayment(id: string) {
+  await requireFinance();
+  if (!validId(id)) notFound();
+  const db = await createSupabaseServerClient();
+  const { data, error } = await db.rpc("finance_customer_payment", { p_id: id });
+  if (error) throw new Error("No pudimos cargar la distribución del cobro.");
+  if (!data) notFound();
+  return data as import("./customer-payment-types").CustomerPayment;
+}
