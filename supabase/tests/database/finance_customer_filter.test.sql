@@ -32,6 +32,7 @@ select public.create_direct_order('00000000-0000-4000-8000-000000001639','000000
 select public.create_direct_order('00000000-0000-4000-8000-000000001640','00000000-0000-4000-8000-000000001610',null,null,'','[{"description":"Trabajo","quantity":1,"amount":"100"}]');
 select public.create_direct_order('00000000-0000-4000-8000-000000001660','00000000-0000-4000-8000-000000001611',null,null,'','[{"description":"Otro trabajo","quantity":1,"amount":"200"}]');
 reset role;
+update public.order_items set production_status='completed',completed_at=now() where order_id in (select id from public.orders where customer_id in ('00000000-0000-4000-8000-000000001610','00000000-0000-4000-8000-000000001611'));
 delete from public.team_member_roles where member_id='00000000-0000-4000-8000-000000001601' and role='designer';
 set local role authenticated;
 set local "request.jwt.claim.sub"='00000000-0000-4000-8000-000000001601';

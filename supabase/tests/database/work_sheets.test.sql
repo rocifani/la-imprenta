@@ -27,7 +27,7 @@ select is(jsonb_array_length(public.customer_completed_summary('00000000-0000-40
 select ok(position('PRIVADO' in public.customer_completed_summary('00000000-0000-4000-8000-000000000621')::text)=0,'El resumen no filtra datos privados del taller o cliente');
 select ok(position('NO MOSTRAR PDF' in public.customer_completed_summary('00000000-0000-4000-8000-000000000621')::text)=0,'El texto de trabajos pendientes no llega al PDF');
 select is((public.customer_completed_summary('00000000-0000-4000-8000-000000000621')->'orders'->0->>'completed_total')::numeric,100::numeric,'El importe terminado se distingue del total de la nota');
-select is((public.customer_completed_summary('00000000-0000-4000-8000-000000000621')->>'balance')::numeric,300::numeric,'El saldo sigue siendo de la nota completa');
+select is((public.customer_completed_summary('00000000-0000-4000-8000-000000000621')->>'balance')::numeric,100::numeric,'El saldo incluye solo trabajos terminados');
 select throws_ok($$select public.save_order_work_details('00000000-0000-4000-8000-000000000622',1,(select jsonb_agg(jsonb_build_object('id',id,'client_description',client_description,'specifications',specifications,'technical_sheet',technical_sheet||'{"printer_code":"ABC"}'::jsonb)) from public.order_items where order_id='00000000-0000-4000-8000-000000000622'))$$,'23514',null,'No edita la ficha si ya tiene un ítem terminado');
 select is((select total from public.orders where id='00000000-0000-4000-8000-000000000622'),300::numeric,'Editar la ficha no cambia el importe');
 select is((select production_status from public.order_items where order_id='00000000-0000-4000-8000-000000000622' and position=1),'completed','Editar la ficha conserva cierres anteriores');

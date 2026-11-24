@@ -17,6 +17,9 @@ select public.create_direct_order('00000000-0000-4000-8000-000000001722','000000
 
 select public.create_direct_order('00000000-0000-4000-8000-000000001723','00000000-0000-4000-8000-000000001711',null,null,'','[{"description":"Otro trabajo","quantity":1,"amount":"500"}]');
 select public.complete_production('00000000-0000-4000-8000-000000001721',null,'Terminado');
+select public.complete_production('00000000-0000-4000-8000-000000001720',null,'Terminado');
+select public.complete_production('00000000-0000-4000-8000-000000001722',null,'Terminado');
+select public.complete_production('00000000-0000-4000-8000-000000001723',null,'Terminado');
 select lives_ok($$select public.record_customer_payment('00000000-0000-4000-8000-000000001740','00000000-0000-4000-8000-000000001710',3000,'1901-01-15','check','Referencia cheque');$$,'Distribuye cheque en una sola operación');
 select is((public.order_money('00000000-0000-4000-8000-000000001720')->>'balance')::numeric,0::numeric,'Cancela la más vieja descontando seña');
 select is((public.order_money('00000000-0000-4000-8000-000000001721')->>'balance')::numeric,0::numeric,'Cancela la siguiente aunque esté terminada');
@@ -37,6 +40,8 @@ select is((public.order_money('00000000-0000-4000-8000-000000001722')->>'balance
 select is((public.finance_customer_account('00000000-0000-4000-8000-000000001710')->>'credit')::numeric,800::numeric,'Excedente disponible para próximos pedidos');
 select is((public.finance_month('1901-01-01')->>'income')::numeric,5300::numeric,'Ingreso cuenta cheque completo incluido excedente una vez');
 select public.create_direct_order('00000000-0000-4000-8000-000000001724','00000000-0000-4000-8000-000000001710',null,null,'','[{"description":"Trabajo IVA","quantity":1,"amount":"100","with_vat":true}]','{"amount":"20","paid_on":"1902-02-01","method":"check"}');
+select is((public.finance_customer_account('00000000-0000-4000-8000-000000001710')->>'credit')::numeric,800::numeric,'No consume crédito mientras la nueva nota está pendiente');
+select public.complete_production('00000000-0000-4000-8000-000000001724',null,'');
 select is((public.order_money('00000000-0000-4000-8000-000000001724')->>'balance')::numeric,0::numeric,'Nota nueva aplica crédito después de IVA y seña');
 select is((public.finance_customer_account('00000000-0000-4000-8000-000000001710')->>'credit')::numeric,699::numeric,'Descuenta solo lo aplicado del saldo a favor');
 select is((public.finance_month('1901-01-01')->>'income')::numeric,5300::numeric,'Aplicar crédito no suma de nuevo el ingreso original');
@@ -45,9 +50,11 @@ select ok(public.finance_receipts('00000000-0000-4000-8000-000000001724') @> '[{
 select public.save_quote('00000000-0000-4000-8000-000000001760',null,'Cliente cheque','','','[{"description":"Nuevo presupuesto","quantity":1,"amount":"200"}]','00000000-0000-4000-8000-000000001710');
 select public.approve_quote('00000000-0000-4000-8000-000000001760',1,'');
 select public.create_order_from_quote('00000000-0000-4000-8000-000000001760',2,null,null,null,null,null,'','{}',array[true]);
+select public.complete_production((select id from public.orders where quote_id='00000000-0000-4000-8000-000000001760'),null,'');
 select is((select (public.order_money(id)->>'balance')::numeric from public.orders where quote_id='00000000-0000-4000-8000-000000001760'),0::numeric,'Conversión desde presupuesto también aplica crédito');
 select is((public.finance_customer_account('00000000-0000-4000-8000-000000001710')->>'credit')::numeric,457::numeric,'Conversión aplica el total con IVA');
 select public.create_direct_order('00000000-0000-4000-8000-000000001725','00000000-0000-4000-8000-000000001710',null,null,'','[{"description":"Duplicado","quantity":1,"amount":"50"}]',null,null,'00000000-0000-4000-8000-000000001724');
+select public.complete_production('00000000-0000-4000-8000-000000001725',null,'');
 select is((public.finance_customer_account('00000000-0000-4000-8000-000000001710')->>'credit')::numeric,407::numeric,'Duplicación consume solo nuevo importe');
 select public.create_direct_order('00000000-0000-4000-8000-000000001725',null,null,null,'','[]');
 select is((public.finance_customer_account('00000000-0000-4000-8000-000000001710')->>'credit')::numeric,407::numeric,'Reintentar alta no vuelve a consumir crédito');

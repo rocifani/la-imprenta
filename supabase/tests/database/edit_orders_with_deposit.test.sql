@@ -21,7 +21,10 @@ select lives_ok($$select public.edit_order('00000000-0000-4000-8000-000000001022
 select is((public.order_money('00000000-0000-4000-8000-000000001022')->>'balance')::numeric,0::numeric,'Saldo cero permitido');
 select throws_ok($$select public.delete_order('00000000-0000-4000-8000-000000001022',4,(select number from public.orders where id='00000000-0000-4000-8000-000000001022'))$$,'23514',null,'Seña sigue impidiendo borrado');
 select lives_ok($$select public.edit_order('00000000-0000-4000-8000-000000001022',4,'[{"description":"Imanes nuevos","client_description":"Imanes nuevos","specifications":"Cortar","quantity":500,"amount":"200"}]','Nuevo detalle','{}','')$$,'Permite aumentar total luego');
-select public.record_payment('00000000-0000-4000-8000-000000001050','00000000-0000-4000-8000-000000001022',1,'1901-01-15','cash','Cobro posterior');
+-- Cobro legado previo a la regla de producción: conservar protección de edición.
+reset role;
+insert into public.money_movements(id,kind,order_id,amount,paid_on,method,description,created_by) values('00000000-0000-4000-8000-000000001050','payment','00000000-0000-4000-8000-000000001022',1,'1901-01-15','cash','Cobro posterior',auth.uid());
+set local role authenticated;
 select throws_ok($$select public.edit_order('00000000-0000-4000-8000-000000001022',5,'[{"description":"Imanes nuevos","client_description":"Imanes nuevos","specifications":"Cortar","quantity":500,"amount":"250"}]','Nuevo detalle','{}','')$$,'23514',null,'Un cobro adicional mínimo bloquea edición');
 select throws_ok($$select public.save_order_work_details('00000000-0000-4000-8000-000000001022',5,(select jsonb_agg(jsonb_build_object('id',id,'description',description,'client_description',client_description,'specifications',specifications,'quantity',quantity,'amount',amount)) from public.order_items where order_id='00000000-0000-4000-8000-000000001022'),'Ficha','{}')$$,'23514',null,'Un cobro adicional bloquea ficha');
 select ok(not has_function_privilege('authenticated','private.edit_order_before_deposit(uuid,integer,jsonb,text,jsonb,text)','EXECUTE'),'No puede omitir control de total');

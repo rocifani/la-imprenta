@@ -53,7 +53,7 @@ export function CustomerPaymentForm({ id, initialAccount }: { id: string; initia
 
   return <ConfirmedForm action={action} pending={pending}
     title="¿Registrar y distribuir este cobro?"
-    description={selected ? "Cliente " + selected.display_name + ". Se registrará " + (cents ? formatMoney(cents / 100) : "el importe indicado") + ". Se aplicará primero a las notas más antiguas y el excedente quedará como saldo a favor." : "Elegí un cliente antes de confirmar."}>
+    description={selected ? "Cliente " + selected.display_name + ". Se registrará " + (cents ? formatMoney(cents / 100) : "el importe indicado") + ". Se aplicará a los trabajos terminados de las notas más antiguas y el excedente quedará como saldo a favor." : "Elegí un cliente antes de confirmar."}>
     <input type="hidden" name="id" value={id} />
     {state.error && <p className="form-alert" role="alert">{state.error}</p>}
     <fieldset className="form-fields" disabled={pending}>

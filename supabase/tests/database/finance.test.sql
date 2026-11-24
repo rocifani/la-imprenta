@@ -10,6 +10,9 @@ insert into public.team_member_roles(member_id,role) values('00000000-0000-4000-
 set local role authenticated;
 set local "request.jwt.claim.sub"='00000000-0000-4000-8000-000000000501';
 select lives_ok($$select public.create_direct_order('00000000-0000-4000-8000-000000000521',null,'{"display_name":"Cliente dinero"}','00000000-0000-4000-8000-000000000522','','[{"description":"Trabajo","quantity":100,"amount":"100"}]','{"amount":"40","paid_on":"1901-01-15","method":"transfer"}')$$,'Crea nota y seña juntas');
+reset role;
+update public.order_items set production_status='completed',completed_at=now() where order_id='00000000-0000-4000-8000-000000000521';
+set local role authenticated;
 select is((public.order_money('00000000-0000-4000-8000-000000000521')->>'balance')::numeric,60::numeric,'La seña descuenta el saldo');
 select is((public.order_money('00000000-0000-4000-8000-000000000521')->>'paid')::numeric,40::numeric,'La seña cuenta como dinero cobrado');
 select public.create_direct_order('00000000-0000-4000-8000-000000000521',null,null,null,'','[]','{"amount":"40","paid_on":"1901-01-15","method":"transfer"}');

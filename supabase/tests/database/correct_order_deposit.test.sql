@@ -34,7 +34,10 @@ select is(jsonb_array_length(public.finance_receipts('00000000-0000-4000-8000-00
 select lives_ok($$select public.edit_order('00000000-0000-4000-8000-000000001122',5,'[{"description":"Imanes nuevos","client_description":"Imanes nuevos","specifications":"","quantity":500,"amount":"300"}]','Detalle','{}','',null,false)$$,'Cliente anterior conserva seña si no solicita cambio');
 select is((public.order_money('00000000-0000-4000-8000-000000001122')->>'deposit')::numeric,30::numeric,'Seña se conserva por compatibilidad');
 select throws_ok($$select public.edit_order('00000000-0000-4000-8000-000000001122',5,'[{"description":"Imanes nuevos","client_description":"Imanes nuevos","specifications":"","quantity":500,"amount":"300"}]','Detalle','{}','','{"amount":"1","paid_on":"1901-01-16","method":"transfer"}',true)$$,'40001',null,'Formulario viejo no pisa otra corrección');
-select public.record_payment('00000000-0000-4000-8000-000000001150','00000000-0000-4000-8000-000000001122',1,'1901-01-15','cash','Otro cobro');
+-- Cobro legado previo a la regla de producción: conservar protección de edición.
+reset role;
+insert into public.money_movements(id,kind,order_id,amount,paid_on,method,description,created_by) values('00000000-0000-4000-8000-000000001150','payment','00000000-0000-4000-8000-000000001122',1,'1901-01-15','cash','Otro cobro',auth.uid());
+set local role authenticated;
 select throws_ok($$select public.edit_order('00000000-0000-4000-8000-000000001122',6,'[{"description":"Imanes nuevos","client_description":"Imanes nuevos","specifications":"","quantity":500,"amount":"300"}]','Detalle','{}','','{"amount":"20","paid_on":"1901-01-16","method":"transfer"}',true)$$,'23514',null,'No corrige seña con otros cobros');
 select throws_ok($$select public.edit_order('00000000-0000-4000-8000-000000001122',6,'[{"description":"Imanes nuevos","client_description":"Imanes nuevos","specifications":"","quantity":500,"amount":"300"}]','Detalle','{}','',null,true)$$,'23514',null,'Tampoco quita seña con otros cobros');
 select is((public.order_money('00000000-0000-4000-8000-000000001122')->>'paid')::numeric,31::numeric,'Intentos bloqueados no cambian ingresos');

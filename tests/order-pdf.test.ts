@@ -71,7 +71,7 @@ test("Genera PDF de presupuestos aprobados y versiones anteriores como borrador"
 });
 
  test("El PDF de la nota muestra seña y saldo con cobros posteriores", async()=>{
- const money={total:96000,deposit:20000,paid:30000,balance:66000,overdue:false};
+ const money={total:96000,deposit:20000,paid:30000,balance:66000,due_total:96000,due_balance:66000,advance:0,overdue:false};
  const data=customerOrderDocument(order,items,money);
  assert.equal(data.deposit,20000);assert.equal(data.paid,30000);assert.equal(data.balance,66000);
  const bytes=await buildCommercialPdf(data,await loadPdfAssets());

@@ -36,7 +36,10 @@ select is((select count(*) from public.order_items where order_id='00000000-0000
 select throws_ok($$select public.delete_order('00000000-0000-4000-8000-000000000922',3,-1)$$,'22023',null,'Exige número correcto al borrar');
 -- Un cobro registrado después de abrir el editor impide ambas operaciones.
 set local "request.jwt.claim.sub"='00000000-0000-4000-8000-000000000903';
-select public.record_payment('00000000-0000-4000-8000-000000000950','00000000-0000-4000-8000-000000000923',10,'1901-01-15','cash','Cobro');
+-- Cobro legado previo a la regla de producción: conservar protección de edición.
+reset role;
+insert into public.money_movements(id,kind,order_id,amount,paid_on,method,description,created_by) values('00000000-0000-4000-8000-000000000950','payment','00000000-0000-4000-8000-000000000923',10,'1901-01-15','cash','Cobro',auth.uid());
+set local role authenticated;
 select throws_ok($$select public.edit_order('00000000-0000-4000-8000-000000000922',3,(select jsonb_agg(jsonb_build_object('id',id,'description',description,'client_description',client_description,'specifications',specifications,'quantity',quantity,'amount',amount) order by position) from public.order_items where order_id='00000000-0000-4000-8000-000000000922'),'Trabajo editado','{}','Notas nuevas')$$,'42501',null,'Finanzas no modifica ítems');
 select throws_ok($$select public.delete_order('00000000-0000-4000-8000-000000000922',3,1)$$,'42501',null,'Finanzas no borra notas');
 set local "request.jwt.claim.sub"='00000000-0000-4000-8000-000000000901';
