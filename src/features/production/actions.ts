@@ -15,6 +15,7 @@ export async function completeProduction(_previous:FormState,form:FormData):Prom
  const {error}=await db.rpc("complete_production",{p_order_id:orderId,p_item_id:itemId||null,p_note:note});
  if(error) return {error:["42501","P0002","22023"].includes(error.code)?error.message:"No pudimos cerrar el trabajo. Intentá nuevamente."};
  revalidatePath("/panel/produccion","layout");
+ revalidatePath("/panel/proveedores","layout");
  revalidatePath("/panel/finanzas","layout");
  revalidatePath("/panel/clientes","layout");
  revalidatePath("/panel/pedidos");

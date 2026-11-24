@@ -1,5 +1,7 @@
 "use server";
 
+import {contactData as customerData} from "./contact-data";
+
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -20,9 +22,6 @@ function readVersion(form: FormData) {
   return Number(value);
 }
 
-function customerData(form: FormData) {
-  return Object.fromEntries(["display_name", "contact_name", "phone", "email", "address", "cuit", "notes"].map((key) => [key, String(form.get(key) ?? "").trim()]));
-}
 
 export async function saveCustomer(_previous: FormState, form: FormData): Promise<FormState> {
   await requireDesigner();
@@ -34,7 +33,8 @@ export async function saveCustomer(_previous: FormState, form: FormData): Promis
   if (error) return mutationError(error);
   revalidatePath("/panel/clientes", "layout");
   revalidatePath(`/panel/clientes/${id}`);
-  redirect(`/panel/clientes/${id}?saved=1`);
+  revalidatePath("/panel/proveedores","layout");
+  redirect(form.has("contact_flags")&&form.get("is_customer")!=="on"?"/panel/clientes":`/panel/clientes/${id}?saved=1`);
 }
 
 function readItems(form: FormData, preserveIds=false, orderItems=false) {
@@ -133,7 +133,7 @@ export async function createOrder(_previous: FormState, form: FormData): Promise
   });
   if (error) return mutationError(error);
   revalidatePath("/panel/clientes", "layout");
-  revalidatePath("/panel/pedidos"); revalidatePath("/panel/finanzas","layout");
+  revalidatePath("/panel/pedidos"); revalidatePath("/panel/finanzas","layout"); revalidatePath("/panel/proveedores","layout");
   revalidatePath(`/panel/presupuestos/${id}`);
   redirect(`/panel/pedidos/${data}`);
 }
@@ -153,12 +153,12 @@ export async function createDirectOrder(_previous:FormState, form:FormData):Prom
  const db=await createSupabaseServerClient();
  const {data,error}=await db.rpc("create_direct_order",{p_id:id,p_customer_id:customerId||null,p_new_customer:customerId?null:customerData(form),p_new_customer_id:newCustomerId,p_notes:String(form.get("order_notes")??"").trim(),p_items:parsed.items,p_deposit:depositData.deposit,p_assignee_id:assigneeId||null,p_source_order_id:sourceId||null,p_description:header.description,p_technical_sheet:header.sheet});
  if(error) return mutationError(error);
- revalidatePath("/panel/pedidos"); revalidatePath("/panel/finanzas","layout"); revalidatePath("/panel/clientes","layout");
+ revalidatePath("/panel/pedidos"); revalidatePath("/panel/finanzas","layout"); revalidatePath("/panel/proveedores","layout"); revalidatePath("/panel/clientes","layout");
  redirect(`/panel/pedidos/${data}`);
 }
 
 function refreshOrders(){
- for(const path of ["/panel/pedidos","/panel/produccion","/panel/facturacion","/panel/finanzas","/panel/clientes","/panel/presupuestos"])revalidatePath(path,"layout");
+ for(const path of ["/panel/pedidos","/panel/produccion","/panel/facturacion","/panel/finanzas","/panel/clientes","/panel/presupuestos","/panel/proveedores"])revalidatePath(path,"layout");
 }
 export async function editOrder(_previous:FormState,form:FormData):Promise<FormState>{
  await requireDesigner();

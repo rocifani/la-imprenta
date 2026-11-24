@@ -13,9 +13,11 @@ type CustomerPickerProps={
  endpoint?:string;
  label?:string;
  placeholder?:string;
+ entity?:"cliente"|"proveedor"|"contacto";
+ emptyHint?:string;
 };
 
-export function CustomerPicker({value,onChange,name="customer_id",required=false,endpoint="/panel/clientes/buscar",label="Cliente",placeholder="Buscar por nombre o teléfono"}:CustomerPickerProps){
+export function CustomerPicker({value,onChange,name="customer_id",required=false,endpoint="/panel/clientes/buscar",label="Cliente",placeholder="Buscar por nombre o teléfono",entity="cliente",emptyHint}:CustomerPickerProps){
  const id=useId(),listId=id+"-results",helpId=id+"-help";
  const input=useRef<HTMLInputElement>(null);
  // null muestra la selección recibida; un texto representa una búsqueda sin confirmar.
@@ -28,7 +30,7 @@ export function CustomerPicker({value,onChange,name="customer_id",required=false
  const [retry,setRetry]=useState(0);
 
  useEffect(()=>{
-  input.current?.setCustomValidity(!value&&(required||query?.trim())?"Elegí un cliente de los resultados.":"");
+  input.current?.setCustomValidity(!value&&(required||query?.trim())?`Elegí un ${entity} de los resultados.`:"");
  },[value,required,query]);
 
  useEffect(()=>{
@@ -37,13 +39,13 @@ export function CustomerPicker({value,onChange,name="customer_id",required=false
   setLoading(true);setError("");setMatches([]);setActive(-1);
   const timer=setTimeout(async()=>{
    try{
-    const response=await fetch(endpoint+"?q="+encodeURIComponent((query??"").trim()),{signal:controller.signal,cache:"no-store"});
+    const response=await fetch(endpoint+(endpoint.includes("?")?"&":"?")+"q="+encodeURIComponent((query??"").trim()),{signal:controller.signal,cache:"no-store"});
     if(!response.ok)throw new Error("search");
     const data=await response.json();
     if(!Array.isArray(data.customers))throw new Error("search");
     if(!controller.signal.aborted){setMatches(data.customers);setActive(data.customers.length?0:-1);}
    }catch{
-    if(!controller.signal.aborted)setError("No pudimos buscar clientes. Podés reintentar.");
+    if(!controller.signal.aborted)setError(`No pudimos buscar ${entity==="proveedor"?"proveedores":entity+"s"}. Podés reintentar.`);
    }finally{
     if(!controller.signal.aborted)setLoading(false);
    }
@@ -81,16 +83,16 @@ export function CustomerPicker({value,onChange,name="customer_id",required=false
     onFocus={()=>setOpen(true)}
     onChange={event=>{setQuery(event.target.value);if(value)onChange(null);setMatches([]);setActive(-1);setError("");setLoading(true);setOpen(true);}}
     onKeyDown={handleKey} onInvalid={()=>setOpen(true)}/>
-   {text&&<button type="button" className="customer-picker-clear" aria-label={value?"Quitar cliente seleccionado":"Limpiar búsqueda de cliente"} onClick={clear}>×</button>}
+   {text&&<button type="button" className="customer-picker-clear" aria-label={value?`Quitar ${entity} seleccionado`:`Limpiar búsqueda de ${entity}`} onClick={clear}>×</button>}
    {open&&<div className="customer-search-menu">
-    <ul id={listId} role="listbox" aria-label="Clientes encontrados" aria-busy={loading}>
+    <ul id={listId} role="listbox" aria-label={`${entity==="proveedor"?"Proveedores":entity==="contacto"?"Contactos":"Clientes"} encontrados`} aria-busy={loading}>
      {!loading&&!error&&matches.map((customer,index)=><li key={customer.id} id={listId+"-"+index} role="option" aria-selected={index===active} className={index===active?"is-active":""} onMouseDown={event=>event.preventDefault()} onMouseMove={()=>setActive(index)} onClick={()=>choose(customer)}>
       <span>{customer.display_name}</span>{customer.phone&&<small>{customer.phone}</small>}
      </li>)}
     </ul>
-    {loading?<p role="status" className="customer-search-status">Buscando clientes…</p>:error?<div className="customer-search-status"><p role="alert">{error}</p><button type="button" className="text-button" onClick={()=>setRetry(count=>count+1)}>Reintentar búsqueda</button></div>:!matches.length?<p role="status" className="customer-search-status">No encontramos clientes{query?.trim()?" para esa búsqueda":" disponibles"}.</p>:matches.length>=20?<p className="customer-search-status">Primeros 20 resultados. Escribí más para afinar la búsqueda.</p>:null}
+    {loading?<p role="status" className="customer-search-status">Buscando…</p>:error?<div className="customer-search-status"><p role="alert">{error}</p><button type="button" className="text-button" onClick={()=>setRetry(count=>count+1)}>Reintentar búsqueda</button></div>:!matches.length?<p role="status" className="customer-search-status">No encontramos resultados{query?.trim()?" para esa búsqueda":" disponibles"}.</p>:matches.length>=20?<p className="customer-search-status">Primeros 20 resultados. Escribí más para afinar la búsqueda.</p>:null}
    </div>}
   </div>
-  <p id={helpId} className="field-help">{value?"Cliente seleccionado. Podés quitarlo o escribir para cambiarlo.":required?"Escribí y elegí un cliente de los resultados.":"Escribí para elegir un cliente. Sin selección se incluyen todos."}</p>
+  <p id={helpId} className="field-help">{value?`${label} seleccionado. Podés quitarlo o escribir para cambiarlo.`:required?`Escribí y elegí un ${entity} de los resultados.`:emptyHint??`Escribí para elegir un ${entity}. Sin selección se incluyen todos.`}</p>
  </div>;
 }

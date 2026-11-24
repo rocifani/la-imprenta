@@ -34,6 +34,7 @@ export async function buildCompletedSummaryPdf(data:CompletedSummaryDocument,ass
   }
   ensure(110);paragraph("Importe de los trabajos terminados: "+formatMoney(order.completed_total),{size:9});
   paragraph("Pagos y señas aplicados a la nota: "+formatMoney(order.paid),{size:9});
+  if(order.settled>0)paragraph("Cruzado con compras: "+formatMoney(order.settled),{size:9});
   for(const p of order.payments)paragraph(formatDate(p.date+"T12:00:00Z")+" · "+(p.kind==="deposit"?"Seña":p.kind==="credit_application"?"Saldo a favor aplicado":"Pago")+" · "+(methodLabels[p.method as keyof typeof methodLabels]??p.method)+" · "+formatMoney(p.amount),{size:9});
   paragraph((order.balance<0?"Saldo a favor en la nota: ":"Resta pagar de la nota: ")+formatMoney(Math.abs(order.balance)),{size:11,bold:true,after:14});
  }
@@ -43,7 +44,7 @@ export async function buildCompletedSummaryPdf(data:CompletedSummaryDocument,ass
  paragraph((totals.total<0?"SALDO A FAVOR DEL CLIENTE: ":"TOTAL PENDIENTE DEL CLIENTE: ")+formatMoney(Math.abs(totals.total)),{size:13,bold:true});
  if(data.account){
   section="Cuenta corriente";page=pdf.addPage([width,height]);header();paragraph("CUENTA CORRIENTE",{size:14,bold:true});paragraph(data.customer.name,{size:12,bold:true});
-  paragraph("Debe · Trabajos terminados: "+formatMoney(data.account.debit),{bold:true});paragraph("Haber · Total pagado, incluidas señas: "+formatMoney(data.account.credit),{bold:true});paragraph((data.account.balance<0?"Saldo a favor: ":"Resta pagar: ")+formatMoney(Math.abs(data.account.balance)),{bold:true});
+  paragraph("Debe: "+formatMoney(data.account.debit),{bold:true});paragraph("Haber: "+formatMoney(data.account.credit),{bold:true});paragraph((data.account.balance<0?"Saldo a favor: ":"Resta pagar: ")+formatMoney(Math.abs(data.account.balance)),{bold:true});
   const xs=[margin,104,293,376,459,width-margin];
   function tableHeader(){
    page.drawRectangle({x:margin,y:y-23,width:width-margin*2,height:27,color:rgb(.93,.94,.91)});

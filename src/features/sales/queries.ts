@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Customer, Quote, QuoteVersion, QuoteItem, Order, OrderItem } from "./types";
 
 export const validId = (value: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
-export const customerColumns = "id, display_name, contact_name, phone, email, address, cuit, notes, version";
+export const customerColumns = "id, display_name, contact_name, phone, email, address, cuit, notes, version, is_customer, is_supplier";
 
 export async function requireDesigner() {
   const access = await getTeamAccess();
@@ -17,7 +17,7 @@ export async function getCustomer(id: string): Promise<Customer> {
   await requireDesigner();
   if (!validId(id)) notFound();
   const db = await createSupabaseServerClient();
-  const { data, error } = await db.from("customers").select(customerColumns).eq("id", id).maybeSingle();
+  const { data, error } = await db.from("customers").select(customerColumns).eq("id", id).eq("is_customer",true).maybeSingle();
   if (error) throw new Error("No pudimos cargar el cliente.");
   if (!data) notFound();
   return data as Customer;

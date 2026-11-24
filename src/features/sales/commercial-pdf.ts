@@ -144,6 +144,7 @@ export async function buildCommercialPdf(data: CustomerOrderDocument | CustomerQ
     ensure(100);
     paragraph(`Seña recibida: ${formatMoney(data.deposit)}`, {size:10});
     if (data.paid > data.deposit) paragraph(`Otros cobros registrados: ${formatMoney(data.paid-data.deposit)}`, {size:10});
+    if(data.settled>0)paragraph(`Cruzado con compras: ${formatMoney(data.settled)}`,{size:10});
     paragraph(`Saldo pendiente: ${formatMoney(data.balance)}`, {size:12,bold:true});
     paragraph("Saldo según los cobros registrados al emitir este documento.", {size:8});
   }

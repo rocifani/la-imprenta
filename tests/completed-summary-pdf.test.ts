@@ -41,3 +41,9 @@ test("La deuda total coincide con trabajos terminados y no agrega pedidos pendie
  assert.deepEqual(totals,{included:3700,other:0,credit:0,total:3700});
  assert.deepEqual(summaryBalances({balance:0,credit:407,account:{debit:4913,credit:5320,balance:-407,entries:[]}}),{included:0,other:0,credit:407,total:-407});
 });
+
+test("Cuenta corriente unificada presenta compras y pagos a proveedor",async()=>{
+ const source:CompletedCustomerSummary={...base,orders:[{...base.orders[0],total:48000,paid:0,settled:18000,balance:30000}],account:{debit:50000,credit:20000,balance:30000,entries:[{date:"2026-10-24",kind:"order",description:"Talonarios comerciales",number:146,debit:48000,credit:0,balance:48000,method:null,allocations:[]},{date:"2026-10-25",kind:"purchase",description:"Compra de papel ilustración",number:1,debit:0,credit:20000,balance:28000,method:null,allocations:[]},{date:"2026-10-25",kind:"supplier_payment",number:null,debit:2000,credit:0,balance:30000,method:"check",allocations:[]}]}};
+ const doc=completedSummaryDocument(source);assert.equal(doc.orders[0].settled,18000);
+ const bytes=await buildCompletedSummaryPdf(doc,await loadPdfAssets());assert.equal((await PDFDocument.load(bytes)).getPageCount(),2);await writeFile("tmp/pdfs/resumen-cliente-proveedor.pdf",bytes);
+});

@@ -1,5 +1,5 @@
 export type Customer = {
-  id: string; display_name: string; contact_name: string; phone: string;
+  is_customer?:boolean;is_supplier?:boolean;id: string; display_name: string; contact_name: string; phone: string;
   email: string; address: string; cuit: string; notes: string; version: number;
 };
 export type QuoteItem = { alternative_id?:string; client_description?: string; technical_sheet?: import("@/features/production/technical-sheet").TechnicalSheet; description: string; specifications: string; quantity: number; amount: string | number };

@@ -94,3 +94,9 @@ test("Genera una nota mixta con base, IVA por línea y total", async () => {
   await mkdir("tmp/pdfs", { recursive: true });
   await writeFile("tmp/pdfs/nota-iva-mixto.pdf", pdf);
 });
+
+test("El PDF de la nota distingue cruces de compras de dinero cobrado",async()=>{
+ const data=customerOrderDocument(order,items,{total:96000,paid:20000,deposit:20000,balance:36000,due_total:96000,due_balance:36000,advance:0,overdue:false,settled:40000});
+ assert.equal(data.paid,20000);assert.equal(data.settled,40000);assert.equal(data.balance,36000);
+ const bytes=await buildCommercialPdf(data,await loadPdfAssets());await writeFile("tmp/pdfs/nota-con-cruce.pdf",bytes);
+});

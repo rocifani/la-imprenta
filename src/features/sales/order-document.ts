@@ -15,7 +15,7 @@ export function customerOrderDocument(order: Order, items: OrderItem[], money?: 
     },
     items: items.map(item => ({ description:item.client_description?.trim()||item.description, specifications:"", quantity:item.quantity, amount:item.amount, withVat:item.with_vat===true, base:orderItemBase(item), vat:Number(item.vat_amount??0) })),
     total: order.total,
-    deposit: money?.deposit ?? 0, paid: money?.paid ?? 0, balance: money?.balance ?? Number(order.total),
+    settled:money?.settled??0,deposit: money?.deposit ?? 0, paid: money?.paid ?? 0, balance: money?.balance ?? Number(order.total),
   };
 }
 
